@@ -30,7 +30,7 @@ export function WeekView({
     return date;
   });
 
-  const timeSlots = generateTimeSlots(9, 25, 30);
+  const timeSlots = generateTimeSlots(0, 24, 30);
 
   const goToPreviousWeek = () => {
     const newDate = new Date(currentDate);

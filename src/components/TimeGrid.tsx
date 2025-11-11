@@ -24,13 +24,36 @@ export function TimeGrid({
 }: TimeGridProps) {
   const getTasksForDayAndTime = (date: Date, time: string) => {
     const dateStr = formatDate(date);
+    const prevDate = new Date(date);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const prevDateStr = formatDate(prevDate);
     const timeMinutes = parseTimeToMinutes(time);
     
     return tasks.filter(task => {
-      if (task.date !== dateStr) return false;
-      const taskStart = parseTimeToMinutes(task.start_time);
-      const taskEnd = parseTimeToMinutes(task.end_time);
-      return timeMinutes >= taskStart && timeMinutes < taskEnd;
+      // Check if task is on this day
+      if (task.date === dateStr) {
+        const taskStart = parseTimeToMinutes(task.start_time);
+        const taskEnd = parseTimeToMinutes(task.end_time);
+        
+        // Task spans to next day if end < start
+        if (taskEnd < taskStart) {
+          return timeMinutes >= taskStart; // Only show up to midnight
+        }
+        return timeMinutes >= taskStart && timeMinutes < taskEnd;
+      }
+      
+      // Check if task from previous day spans into this day
+      if (task.date === prevDateStr) {
+        const taskStart = parseTimeToMinutes(task.start_time);
+        const taskEnd = parseTimeToMinutes(task.end_time);
+        
+        // If end < start, task spans to next day (this day)
+        if (taskEnd < taskStart) {
+          return timeMinutes < taskEnd; // Show from midnight to end time
+        }
+      }
+      
+      return false;
     });
   };
 
@@ -39,18 +62,43 @@ export function TimeGrid({
     return events.filter(event => event.date === dateStr);
   };
 
-  const getTaskHeight = (task: ScheduledTask) => {
+  const getTaskHeight = (task: ScheduledTask, date: Date) => {
+    const dateStr = formatDate(date);
     const start = parseTimeToMinutes(task.start_time);
     const end = parseTimeToMinutes(task.end_time);
+    
+    // Task spans to next day
+    if (end < start) {
+      if (task.date === dateStr) {
+        // First day: from start to midnight (24:00 = 1440 minutes)
+        const duration = 1440 - start;
+        return (duration / 30) * 72;
+      } else {
+        // Next day: from midnight to end
+        const duration = end;
+        return (duration / 30) * 72;
+      }
+    }
+    
     const duration = end - start;
     // Each 30-min slot is ~72px
     return (duration / 30) * 72;
   };
 
-  const getTaskTop = (task: ScheduledTask, firstSlotTime: string) => {
-    const taskStart = parseTimeToMinutes(task.start_time);
+  const getTaskTop = (task: ScheduledTask, firstSlotTime: string, date: Date) => {
+    const dateStr = formatDate(date);
+    const start = parseTimeToMinutes(task.start_time);
+    const end = parseTimeToMinutes(task.end_time);
     const slotStart = parseTimeToMinutes(firstSlotTime);
-    const offset = taskStart - slotStart;
+    
+    // If task spans to next day and we're showing the next day portion
+    if (end < start && task.date !== dateStr) {
+      // Next day portion starts at 00:00
+      const offset = 0 - slotStart;
+      return (offset / 30) * 72;
+    }
+    
+    const offset = start - slotStart;
     return (offset / 30) * 72;
   };
 
@@ -93,16 +141,23 @@ export function TimeGrid({
 
                   {/* Show tasks that start in this time slot */}
                   {dayTasks.map((task) => {
-                    const isTaskStart = task.start_time === time;
-                    if (!isTaskStart) return null;
+                    const taskStart = parseTimeToMinutes(task.start_time);
+                    const taskEnd = parseTimeToMinutes(task.end_time);
+                    const spansNextDay = taskEnd < taskStart;
+                    
+                    // Determine if this is the start position for this task
+                    const isFirstDayStart = task.date === dateStr && task.start_time === time;
+                    const isNextDayStart = spansNextDay && task.date !== dateStr && time === '00:00';
+                    
+                    if (!isFirstDayStart && !isNextDayStart) return null;
                     
                     return (
                       <div
                         key={task.id}
                         className="absolute left-3 right-3 z-20"
                         style={{
-                          height: `${getTaskHeight(task)}px`,
-                          top: `${getTaskTop(task, time)}px`,
+                          height: `${getTaskHeight(task, day)}px`,
+                          top: `${getTaskTop(task, time, day)}px`,
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
