@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
-import { Send, X } from 'lucide-react';
+import { Send, X, Calendar, Filter } from 'lucide-react';
+import type { ScheduledTask } from '@/lib/api';
 
 interface PulseNote {
   id: number;
@@ -8,16 +9,56 @@ interface PulseNote {
   created_at: string;
 }
 
+interface UnifiedNote {
+  id: string; // string to handle both number and composite keys
+  content: string;
+  created_at: string;
+  type: 'pulse' | 'reflection';
+  linkedTask?: ScheduledTask;
+}
+
 interface PulseNotesProps {
   onSave?: (content: string) => Promise<void>;
   onDelete?: (id: number) => Promise<void>;
   notes: PulseNote[];
+  tasks?: ScheduledTask[];
+  onTaskClick?: (task: ScheduledTask) => void;
 }
 
-export function PulseNotes({ onSave, onDelete, notes }: PulseNotesProps) {
+export function PulseNotes({ onSave, onDelete, notes, tasks = [], onTaskClick }: PulseNotesProps) {
   const [newNote, setNewNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'pulse' | 'linked'>('all');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Combine pulse notes and reflection notes
+  const unifiedNotes: UnifiedNote[] = [
+    // Pulse notes
+    ...notes.map(note => ({
+      id: `pulse-${note.id}`,
+      content: note.content,
+      created_at: note.created_at,
+      type: 'pulse' as const,
+    })),
+    // Reflection notes from tasks
+    ...tasks
+      .filter(task => task.reflection_notes && task.reflection_notes.trim())
+      .map(task => ({
+        id: `task-${task.id}`,
+        content: task.reflection_notes!,
+        created_at: task.completed_at || task.date,
+        type: 'reflection' as const,
+        linkedTask: task,
+      }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // Filter notes based on selected filter
+  const filteredNotes = unifiedNotes.filter(note => {
+    if (filter === 'all') return true;
+    if (filter === 'pulse') return note.type === 'pulse';
+    if (filter === 'linked') return note.type === 'reflection';
+    return true;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +108,36 @@ export function PulseNotes({ onSave, onDelete, notes }: PulseNotesProps) {
 
   return (
     <div className="space-y-6">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <Button
+          variant={filter === 'all' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('all')}
+          className="h-7 px-3 text-xs"
+        >
+          All Notes ({unifiedNotes.length})
+        </Button>
+        <Button
+          variant={filter === 'pulse' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('pulse')}
+          className="h-7 px-3 text-xs"
+        >
+          Quick Notes ({notes.length})
+        </Button>
+        <Button
+          variant={filter === 'linked' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setFilter('linked')}
+          className="h-7 px-3 text-xs"
+        >
+          <Calendar className="h-3 w-3 mr-1" />
+          Linked ({tasks.filter(t => t.reflection_notes).length})
+        </Button>
+      </div>
+
       {/* New Note Input */}
       <form onSubmit={handleSubmit} className="rounded-xl border border-border/40 bg-card shadow-sm overflow-hidden">
         <div className="p-6">
@@ -101,12 +172,14 @@ export function PulseNotes({ onSave, onDelete, notes }: PulseNotesProps) {
 
       {/* Notes Feed */}
       <div className="space-y-4">
-        {notes.length === 0 ? (
+        {filteredNotes.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground text-sm">
-            No notes yet. Write your first note above.
+            {filter === 'all' && 'No notes yet. Write your first note above.'}
+            {filter === 'pulse' && 'No quick notes yet.'}
+            {filter === 'linked' && 'No reflection notes from calendar tasks yet.'}
           </div>
         ) : (
-          notes.map((note) => (
+          filteredNotes.map((note) => (
             <div
               key={note.id}
               className="rounded-xl border border-border/40 bg-card shadow-sm group hover:shadow-md transition-all"
@@ -114,13 +187,28 @@ export function PulseNotes({ onSave, onDelete, notes }: PulseNotesProps) {
               <div className="p-6">
                 <div className="flex gap-4">
                   <div className="flex-1 min-w-0">
+                    {/* Note Type Badge */}
+                    {note.type === 'reflection' && note.linkedTask && (
+                      <div 
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mb-3 cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{
+                          backgroundColor: note.linkedTask.color + '15',
+                          color: note.linkedTask.color,
+                        }}
+                        onClick={() => onTaskClick?.(note.linkedTask!)}
+                      >
+                        <Calendar className="h-3 w-3" />
+                        <span>{note.linkedTask.title}</span>
+                        <span className="opacity-60">• {note.linkedTask.date}</span>
+                      </div>
+                    )}
                     <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
                       {note.content}
                     </p>
                   </div>
-                  {onDelete && (
+                  {onDelete && note.type === 'pulse' && (
                     <button
-                      onClick={() => onDelete(note.id)}
+                      onClick={() => onDelete(parseInt(note.id.split('-')[1]))}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500 self-start"
                     >
                       <X className="h-4 w-4" />
