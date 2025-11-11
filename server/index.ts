@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import db, { initDatabase } from './database.js';
 import { 
   verifyPassword, 
@@ -9,6 +11,9 @@ import {
   resetRateLimit,
   AuthRequest 
 } from './auth.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,7 +26,7 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' })); // Limit payload size
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Security headers
+// Security headerss
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -290,6 +295,16 @@ app.post('/api/templates/:id/apply', authenticateToken, (req, res) => {
   res.json({ success: true, tasks: insertedTasks });
 });
 
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+  
+  // Catch-all route to serve index.html for frontend routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Start server
 app.listen(PORT, () => {
