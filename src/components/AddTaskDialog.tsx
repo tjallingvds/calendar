@@ -35,7 +35,17 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, initialDate, initialT
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, description, date, start_time: startTime, end_time: endTime, color });
+    
+    // Convert end time to next day format if it's before start time (e.g., 23:00 - 00:30)
+    let finalEndTime = endTime;
+    if (endTime < startTime) {
+      // Parse end time and add 24 hours
+      const [hours, minutes] = endTime.split(':');
+      const nextDayHours = parseInt(hours) + 24;
+      finalEndTime = `${nextDayHours.toString().padStart(2, '0')}:${minutes}`;
+    }
+    
+    onSubmit({ title, description, date, start_time: startTime, end_time: finalEndTime, color });
     setTitle('');
     setDescription('');
     onClose();
@@ -96,7 +106,12 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, initialDate, initialT
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End Time</label>
+              <label className="block text-sm font-medium mb-1">
+                End Time
+                {endTime < startTime && (
+                  <span className="text-xs text-muted-foreground ml-2">(next day)</span>
+                )}
+              </label>
               <input
                 type="time"
                 value={endTime}
