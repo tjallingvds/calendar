@@ -7,6 +7,7 @@ import { TemplateManager } from './components/TemplateManager';
 import { PomodoroTimer } from './components/PomodoroTimer';
 import { WeeklyGoals } from './components/WeeklyGoals';
 import { PulseNotes } from './components/PulseNotes';
+import { Login } from './components/Login';
 import { Button } from './components/ui/button';
 import type { ScheduledTask, Event, PulseNote } from './lib/api';
 import {
@@ -21,13 +22,17 @@ import {
   getPulseNotes,
   createPulseNote,
   deletePulseNote,
+  login,
+  verifyAuth,
 } from './lib/api';
 import { formatDate, getWeekStart, getWeekEnd } from './lib/dateUtils';
-import { Plus, Sparkles, FileText } from 'lucide-react';
+import { Plus, Sparkles, FileText, LogOut } from 'lucide-react';
 
 type DialogType = 'task' | 'event' | 'reflection' | 'event-reflection' | 'template' | null;
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -37,11 +42,32 @@ function App() {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [pulseNotes, setPulseNotes] = useState<PulseNote[]>([]);
+  const [loginError, setLoginError] = useState('');
+
+  // Check if already logged in on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        try {
+          await verifyAuth();
+          setIsAuthenticated(true);
+        } catch (error) {
+          localStorage.removeItem('auth_token');
+          setIsAuthenticated(false);
+        }
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
-    loadWeekData();
-    loadPulseNotes();
-  }, [currentDate]);
+    if (isAuthenticated) {
+      loadWeekData();
+      loadPulseNotes();
+    }
+  }, [currentDate, isAuthenticated]);
 
   const loadPulseNotes = async () => {
     const notes = await getPulseNotes();
@@ -127,24 +153,44 @@ function App() {
     await loadPulseNotes();
   };
 
+  const handleLogin = async (password: string) => {
+    try {
+      console.log('Attempting login...');
+      const response = await login(password);
+      console.log('Login response:', response);
+      localStorage.setItem('auth_token', response.token);
+      setIsAuthenticated(true);
+      setLoginError('');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Incorrect password');
+      setTimeout(() => setLoginError(''), 5000);
+    }
+  };
+
   const [currentPage, setCurrentPage] = useState<'calendar' | 'goals' | 'notes' | 'focus'>('calendar');
+
+  // Show loading or login screen if not authenticated
+  if (isCheckingAuth) {
+    return null; // or a loading spinner
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} error={loginError} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Action Bar */}
-      <div className="border-b border-border/30 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+      {/* Top Navigation Bar */}
+      <div className="border-b border-border/20 bg-background sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-semibold tracking-tight">Remember what you are doing this for.</h1>
-            </div>
-            
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-6">
               <Button
                 variant={currentPage === 'calendar' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setCurrentPage('calendar')}
-                className="h-9 px-3"
+                className="h-8 px-3"
               >
                 Calendar
               </Button>
@@ -152,7 +198,7 @@ function App() {
                 variant={currentPage === 'goals' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setCurrentPage('goals')}
-                className="h-9 px-3"
+                className="h-8 px-3"
               >
                 Goals
               </Button>
@@ -160,7 +206,7 @@ function App() {
                 variant={currentPage === 'notes' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setCurrentPage('notes')}
-                className="h-9 px-3"
+                className="h-8 px-3"
               >
                 Notes
               </Button>
@@ -168,11 +214,24 @@ function App() {
                 variant={currentPage === 'focus' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setCurrentPage('focus')}
-                className="h-9 px-3"
+                className="h-8 px-3"
               >
                 Focus
               </Button>
             </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                localStorage.removeItem('auth_token');
+                setIsAuthenticated(false);
+              }}
+              className="h-8 px-3 text-muted-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
@@ -250,15 +309,17 @@ function App() {
       {currentPage === 'notes' && (
         <div className="max-w-[1400px] mx-auto px-8 py-10">
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold tracking-tight">Pulse</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Notes</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Keep track of your thoughts and progress
+              All your thoughts and reflections in one place
             </p>
           </div>
           <PulseNotes
             notes={pulseNotes}
+            tasks={tasks}
             onSave={handleCreatePulseNote}
             onDelete={handleDeletePulseNote}
+            onTaskClick={handleTaskClick}
           />
         </div>
       )}

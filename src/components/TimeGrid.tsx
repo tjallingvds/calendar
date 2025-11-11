@@ -77,10 +77,11 @@ export function TimeGrid({
                   onClick={() => onTimeSlotClick?.(dateStr, time)}
                 >
                   {/* Show events at top of day */}
-                  {timeIndex === 0 && dayEvents.map((event) => (
+                  {timeIndex === 0 && dayEvents.map((event, eventIndex) => (
                     <div
                       key={event.id}
-                      className="absolute top-3 left-3 right-3 z-10"
+                      className="absolute left-3 right-3 z-10"
+                      style={{ top: `${12 + (eventIndex * 36)}px` }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onEventClick?.(event);
