@@ -85,7 +85,9 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
 app.get('/api/scheduled-tasks', authenticateToken, async (req, res) => {
   const { startDate, endDate } = req.query;
   const tasks = await query('SELECT * FROM scheduled_tasks WHERE date >= ? AND date <= ? ORDER BY date, start_time', [startDate, endDate]);
-  res.json(tasks);
+  // Ensure completed is boolean, not integer
+  const normalizedTasks = tasks.map(t => ({ ...t, completed: Boolean(t.completed) }));
+  res.json(normalizedTasks);
 });
 
 app.post('/api/scheduled-tasks', authenticateToken, async (req, res) => {
@@ -123,7 +125,9 @@ app.delete('/api/scheduled-tasks/:id', authenticateToken, async (req, res) => {
 app.get('/api/events', authenticateToken, async (req, res) => {
   const { startDate, endDate } = req.query;
   const events = await query('SELECT * FROM events WHERE date >= ? AND date <= ? ORDER BY date, start_time', [startDate, endDate]);
-  res.json(events);
+  // Ensure completed is boolean, not integer
+  const normalizedEvents = events.map(e => ({ ...e, completed: Boolean(e.completed) }));
+  res.json(normalizedEvents);
 });
 
 app.post('/api/events', authenticateToken, async (req, res) => {
