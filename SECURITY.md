@@ -113,5 +113,5 @@ Without the correct password:
 - Database remains encrypted at rest
 - No information is leaked through error messages
 
-Your productivity data is completely secure! 🎉
+Your productivity data is completely secure! 
 

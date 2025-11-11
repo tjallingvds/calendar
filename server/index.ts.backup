@@ -94,7 +94,7 @@ app.post('/api/scheduled-tasks', authenticateToken, async (req, res) => {
   res.json({ id: result.lastInsertRowid, ...req.body });
 });
 
-app.put('/api/scheduled-tasks/:id', authenticateToken, async (req, res) => {
+app.put('/api/scheduled-tasks/:id', authenticateToken, (req, res) => {
   const updates = [];
   const values = [];
   
@@ -109,30 +109,30 @@ app.put('/api/scheduled-tasks/:id', authenticateToken, async (req, res) => {
   });
   
   values.push(req.params.id);
-  await run(`UPDATE scheduled_tasks SET ${updates.join(', ')} WHERE id = ?`, values);
+  db.prepare(`UPDATE scheduled_tasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   res.json({ success: true });
 });
 
-app.delete('/api/scheduled-tasks/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM scheduled_tasks WHERE id = ?', [req.params.id]);
+app.delete('/api/scheduled-tasks/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM scheduled_tasks WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // ===== EVENTS ===== (Protected)
 
-app.get('/api/events', authenticateToken, async (req, res) => {
+app.get('/api/events', authenticateToken, (req, res) => {
   const { startDate, endDate } = req.query;
-  const events = await query('SELECT * FROM events WHERE date >= ? AND date <= ? ORDER BY date, start_time', [startDate, endDate]);
+  const events = db.prepare('SELECT * FROM events WHERE date >= ? AND date <= ? ORDER BY date, start_time').all(startDate, endDate);
   res.json(events);
 });
 
-app.post('/api/events', authenticateToken, async (req, res) => {
+app.post('/api/events', authenticateToken, (req, res) => {
   const { title, description, date, start_time, end_time, type, color } = req.body;
-  const result = await run('INSERT INTO events (title, description, date, start_time, end_time, type, color) VALUES (?, ?, ?, ?, ?, ?, ?)', [title, description || null, date, start_time || null, end_time || null, type || 'event', color || '#ef4444']);
+  const result = db.prepare('INSERT INTO events (title, description, date, start_time, end_time, type, color) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, description || null, date, start_time || null, end_time || null, type || 'event', color || '#ef4444');
   res.json({ id: result.lastInsertRowid, ...req.body });
 });
 
-app.put('/api/events/:id', authenticateToken, async (req, res) => {
+app.put('/api/events/:id', authenticateToken, (req, res) => {
   const updates = [];
   const values = [];
   
@@ -148,124 +148,128 @@ app.put('/api/events/:id', authenticateToken, async (req, res) => {
   
   values.push(req.params.id);
   if (updates.length > 0) {
-    await run(`UPDATE events SET ${updates.join(', ')} WHERE id = ?`, values);
+    db.prepare(`UPDATE events SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   }
   res.json({ success: true });
 });
 
-app.delete('/api/events/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM events WHERE id = ?', [req.params.id]);
+app.delete('/api/events/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM events WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // ===== WEEKLY GOALS ===== (Protected)
 
-app.get('/api/weekly-goals/:weekStart', authenticateToken, async (req, res) => {
-  const goals = await query('SELECT * FROM weekly_goals WHERE week_start = ? ORDER BY created_at', [req.params.weekStart]);
+app.get('/api/weekly-goals/:weekStart', authenticateToken, (req, res) => {
+  const goals = db.prepare('SELECT * FROM weekly_goals WHERE week_start = ? ORDER BY created_at').all(req.params.weekStart);
   res.json(goals);
 });
 
-app.post('/api/weekly-goals', authenticateToken, async (req, res) => {
+app.post('/api/weekly-goals', authenticateToken, (req, res) => {
   const { text, week_start, completed } = req.body;
-  const result = await run('INSERT INTO weekly_goals (text, week_start, completed) VALUES (?, ?, ?)', [text, week_start, completed || 0]);
+  const result = db.prepare('INSERT INTO weekly_goals (text, week_start, completed) VALUES (?, ?, ?)').run(text, week_start, completed || 0);
   res.json({ id: result.lastInsertRowid, ...req.body });
 });
 
-app.put('/api/weekly-goals/:id', authenticateToken, async (req, res) => {
+app.put('/api/weekly-goals/:id', authenticateToken, (req, res) => {
   const { text, completed } = req.body;
-  await run('UPDATE weekly_goals SET text = ?, completed = ? WHERE id = ?', [text, completed ? 1 : 0, req.params.id]);
+  db.prepare('UPDATE weekly_goals SET text = ?, completed = ? WHERE id = ?').run(text, completed ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/weekly-goals/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM weekly_goals WHERE id = ?', [req.params.id]);
+app.delete('/api/weekly-goals/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM weekly_goals WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // ===== PULSE NOTES ===== (Protected)
 
-app.get('/api/pulse-notes', authenticateToken, async (req, res) => {
+app.get('/api/pulse-notes', authenticateToken, (req, res) => {
   const limit = parseInt(req.query.limit as string) || 50;
-  const notes = await query('SELECT * FROM pulse_notes ORDER BY created_at DESC LIMIT ?', [limit]);
+  const notes = db.prepare('SELECT * FROM pulse_notes ORDER BY created_at DESC LIMIT ?').all(limit);
   res.json(notes);
 });
 
-app.post('/api/pulse-notes', authenticateToken, async (req, res) => {
+app.post('/api/pulse-notes', authenticateToken, (req, res) => {
   const { content } = req.body;
-  const result = await run('INSERT INTO pulse_notes (content) VALUES (?)', [content]);
-  const newNote = await get('SELECT * FROM pulse_notes WHERE id = ?', [result.lastInsertRowid]);
+  const result = db.prepare('INSERT INTO pulse_notes (content) VALUES (?)').run(content);
+  const newNote = db.prepare('SELECT * FROM pulse_notes WHERE id = ?').get(result.lastInsertRowid);
   res.json(newNote);
 });
 
-app.delete('/api/pulse-notes/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM pulse_notes WHERE id = ?', [req.params.id]);
+app.delete('/api/pulse-notes/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM pulse_notes WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // ===== TEMPLATES ===== (Protected)
 
-app.get('/api/templates', authenticateToken, async (req, res) => {
-  const templates = await query('SELECT * FROM templates ORDER BY created_at DESC', []);
+app.get('/api/templates', authenticateToken, (req, res) => {
+  const templates = db.prepare('SELECT * FROM templates ORDER BY created_at DESC').all();
   res.json(templates);
 });
 
 // Get template with tasks
-app.get('/api/templates/:id', authenticateToken, async (req, res) => {
-  const template = await get('SELECT * FROM templates WHERE id = ?', [req.params.id]);
+app.get('/api/templates/:id', authenticateToken, (req, res) => {
+  const template = db.prepare('SELECT * FROM templates WHERE id = ?').get(req.params.id);
   if (!template) return res.status(404).json({ error: 'Template not found' });
   
-  const tasks = await query('SELECT * FROM template_tasks WHERE template_id = ? ORDER BY day_of_week, start_time', [req.params.id]);
+  const tasks = db.prepare('SELECT * FROM template_tasks WHERE template_id = ? ORDER BY day_of_week, start_time').all(req.params.id);
   res.json({ ...template, tasks });
 });
 
 // Create template
-app.post('/api/templates', authenticateToken, async (req, res) => {
+app.post('/api/templates', authenticateToken, (req, res) => {
   const { name } = req.body;
-  const result = await run('INSERT INTO templates (name) VALUES (?)', [name]);
+  const result = db.prepare('INSERT INTO templates (name) VALUES (?)').run(name);
   res.json({ id: result.lastInsertRowid, name });
 });
 
 // Delete template
-app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM template_tasks WHERE template_id = ?', [req.params.id]);
-  await run('DELETE FROM templates WHERE id = ?', [req.params.id]);
+app.delete('/api/templates/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM template_tasks WHERE template_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM templates WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // Add task to template
-app.post('/api/templates/:id/tasks', authenticateToken, async (req, res) => {
+app.post('/api/templates/:id/tasks', authenticateToken, (req, res) => {
   const { title, description, day_of_week, start_time, end_time, color } = req.body;
-  const result = await run(`
+  const result = db.prepare(`
     INSERT INTO template_tasks (template_id, title, description, day_of_week, start_time, end_time, color)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [req.params.id, title, description || null, day_of_week, start_time, end_time, color || '#3b82f6']);
+  `).run(req.params.id, title, description || null, day_of_week, start_time, end_time, color || '#3b82f6');
   
   res.json({ id: result.lastInsertRowid, ...req.body });
 });
 
 // Update template task
-app.put('/api/template-tasks/:id', authenticateToken, async (req, res) => {
+app.put('/api/template-tasks/:id', authenticateToken, (req, res) => {
   const { title, description, day_of_week, start_time, end_time, color } = req.body;
-  await run(`
+  db.prepare(`
     UPDATE template_tasks 
     SET title = ?, description = ?, day_of_week = ?, start_time = ?, end_time = ?, color = ?
     WHERE id = ?
-  `, [title, description, day_of_week, start_time, end_time, color, req.params.id]);
+  `).run(title, description, day_of_week, start_time, end_time, color, req.params.id);
   
   res.json({ success: true });
 });
 
 // Delete template task
-app.delete('/api/template-tasks/:id', authenticateToken, async (req, res) => {
-  await run('DELETE FROM template_tasks WHERE id = ?', [req.params.id]);
+app.delete('/api/template-tasks/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM template_tasks WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
 // Apply template to a specific week
-app.post('/api/templates/:id/apply', authenticateToken, async (req, res) => {
+app.post('/api/templates/:id/apply', authenticateToken, (req, res) => {
   const { weekStartDate } = req.body; // YYYY-MM-DD format (should be a Sunday)
   
-  const tasks = await query('SELECT * FROM template_tasks WHERE template_id = ?', [req.params.id]);
+  const tasks = db.prepare('SELECT * FROM template_tasks WHERE template_id = ?').all(req.params.id);
+  const insertStmt = db.prepare(`
+    INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
   
   const startDate = new Date(weekStartDate);
   const insertedTasks = [];
@@ -275,10 +279,14 @@ app.post('/api/templates/:id/apply', authenticateToken, async (req, res) => {
     taskDate.setDate(taskDate.getDate() + task.day_of_week);
     const dateStr = taskDate.toISOString().split('T')[0];
     
-    const result = await run(`
-      INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [task.title, task.description, dateStr, task.start_time, task.end_time, task.color]);
+    const result = insertStmt.run(
+      task.title,
+      task.description,
+      dateStr,
+      task.start_time,
+      task.end_time,
+      task.color
+    );
     
     insertedTasks.push({ id: result.lastInsertRowid, ...task, date: dateStr });
   }
