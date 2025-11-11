@@ -24,7 +24,7 @@ export function WeeklyGoals() {
   const loadGoals = async () => {
     try {
       const fetchedGoals = await getWeeklyGoals(currentWeekStart);
-      setGoals(fetchedGoals.map(g => ({ id: g.id, text: g.text, completed: g.completed === 1 || g.completed === true })));
+      setGoals(fetchedGoals.map(g => ({ id: g.id, text: g.text, completed: !!g.completed })));
     } catch (error) {
       console.error('Failed to load goals:', error);
     }
