@@ -96,7 +96,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                   <p className="text-foreground font-medium">Forbes Magazine — One of 100 most promising change-makers in the world</p>
                   <p className="text-foreground font-medium">Rise Global Scholar — Recipient of world's largest and most selective scholarship (Schmidt Futures & Rhodes Trust)</p>
                   <p className="text-foreground font-medium">Millennium Fellow — By the United Nations for Academic Impact</p>
-                  <p className="text-foreground font-medium">Royal Dutch Academy for Arts and Sciences — Top 10 research papers in the Netherlands when I was in high school</p>
+                  <p className="text-foreground font-medium">Royal Dutch Academy for Arts and Sciences — Top 10 among high school research papers in the Netherlands</p>
                 </div>
               </section>
 
