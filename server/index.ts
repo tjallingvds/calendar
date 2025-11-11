@@ -301,7 +301,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(distPath));
   
   // Catch-all route to serve index.html for frontend routing
-  app.get('*', (req, res) => {
+  app.get('/*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
