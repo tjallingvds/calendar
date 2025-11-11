@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
+// In production, use relative URL (same domain). In dev, use localhost
+const API_BASE = import.meta.env.VITE_API_BASE || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:3001/api');
 
 // Auth helpers
 function getAuthHeaders(): HeadersInit {
