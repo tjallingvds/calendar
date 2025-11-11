@@ -143,10 +143,12 @@ export function TimeGrid({
                   {dayTasks.map((task) => {
                     const taskStart = parseTimeToMinutes(task.start_time);
                     const taskEnd = parseTimeToMinutes(task.end_time);
+                    const timeMinutes = parseTimeToMinutes(time);
                     const spansNextDay = taskEnd < taskStart;
                     
                     // Determine if this is the start position for this task
-                    const isFirstDayStart = task.date === dateStr && task.start_time === time;
+                    // Task starts in this 30-min slot if taskStart is between timeMinutes and timeMinutes+30
+                    const isFirstDayStart = task.date === dateStr && taskStart >= timeMinutes && taskStart < timeMinutes + 30;
                     const isNextDayStart = spansNextDay && task.date !== dateStr && time === '00:00';
                     
                     if (!isFirstDayStart && !isNextDayStart) return null;
