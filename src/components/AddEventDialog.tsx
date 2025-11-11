@@ -30,12 +30,21 @@ export function AddEventDialog({ isOpen, onClose, onSubmit, initialDate }: AddEv
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Convert end time to next day format if it's before start time
+    let finalEndTime = endTime;
+    if (startTime && endTime && endTime < startTime) {
+      const [hours, minutes] = endTime.split(':');
+      const nextDayHours = parseInt(hours) + 24;
+      finalEndTime = `${nextDayHours.toString().padStart(2, '0')}:${minutes}`;
+    }
+    
     onSubmit({
       title,
       description,
       date,
       start_time: startTime || undefined,
-      end_time: endTime || undefined,
+      end_time: finalEndTime || undefined,
       type,
       color,
     });
@@ -113,7 +122,12 @@ export function AddEventDialog({ isOpen, onClose, onSubmit, initialDate }: AddEv
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End Time (optional)</label>
+              <label className="block text-sm font-medium mb-1">
+                End Time (optional)
+                {startTime && endTime && endTime < startTime && (
+                  <span className="text-xs text-muted-foreground ml-2">(next day)</span>
+                )}
+              </label>
               <input
                 type="time"
                 value={endTime}
