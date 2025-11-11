@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { Send, X, Calendar, Filter } from 'lucide-react';
 import type { ScheduledTask } from '@/lib/api';

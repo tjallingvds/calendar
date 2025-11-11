@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import type { Template, TemplateTask } from '@/lib/api';
+import type { Template } from '@/lib/api';
 import { getTemplates, createTemplate, applyTemplate, deleteTemplate } from '@/lib/api';
 import { Plus, Trash2, Play, X } from 'lucide-react';
 import { formatDate, getWeekStart } from '@/lib/dateUtils';
