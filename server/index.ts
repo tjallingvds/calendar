@@ -306,8 +306,23 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(async () => {
+    console.log('HTTP server closed');
+    // Close database connections if using PostgreSQL
+    const { pool } = await import('./db.js');
+    if (pool) {
+      await pool.end();
+      console.log('Database pool closed');
+    }
+    process.exit(0);
+  });
 });
 
 
