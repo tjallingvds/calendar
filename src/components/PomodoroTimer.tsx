@@ -3,14 +3,44 @@ import { Button } from './ui/button';
 import { Play, Pause, RotateCcw, Settings } from 'lucide-react';
 
 export function PomodoroTimer() {
-  const [workDuration, setWorkDuration] = useState(25);
-  const [breakDuration, setBreakDuration] = useState(5);
-  const [minutes, setMinutes] = useState(25);
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState<'work' | 'break'>('work');
+  // Load from localStorage or use defaults
+  const [workDuration, setWorkDuration] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_work');
+    return saved ? parseInt(saved) : 25;
+  });
+  const [breakDuration, setBreakDuration] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_break');
+    return saved ? parseInt(saved) : 5;
+  });
+  const [minutes, setMinutes] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_minutes');
+    return saved ? parseInt(saved) : workDuration;
+  });
+  const [seconds, setSeconds] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_seconds');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [isActive, setIsActive] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_active');
+    return saved === 'true';
+  });
+  const [mode, setMode] = useState<'work' | 'break'>(() => {
+    const saved = localStorage.getItem('pomodoro_mode');
+    return (saved as 'work' | 'break') || 'work';
+  });
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('pomodoro_work', workDuration.toString());
+    localStorage.setItem('pomodoro_break', breakDuration.toString());
+    localStorage.setItem('pomodoro_minutes', minutes.toString());
+    localStorage.setItem('pomodoro_seconds', seconds.toString());
+    localStorage.setItem('pomodoro_active', isActive.toString());
+    localStorage.setItem('pomodoro_mode', mode);
+  }, [workDuration, breakDuration, minutes, seconds, isActive, mode]);
 
   useEffect(() => {
     if (isActive) {
@@ -19,7 +49,14 @@ export function PomodoroTimer() {
           if (minutes === 0) {
             // Timer completed
             setIsActive(false);
-            playSound();
+            playBetterSound();
+            // Show notification
+            if (Notification.permission === 'granted') {
+              new Notification(mode === 'work' ? 'Work session complete!' : 'Break complete!', {
+                body: mode === 'work' ? 'Time for a break!' : 'Time to get back to work!',
+                icon: '/vite.svg',
+              });
+            }
             if (mode === 'work') {
               setMode('break');
               setMinutes(breakDuration);
@@ -46,9 +83,88 @@ export function PomodoroTimer() {
     };
   }, [isActive, minutes, seconds, mode, workDuration, breakDuration]);
 
-  const playSound = () => {
-    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBy/LTgjMGHm7A7+OZTA0PVanm77BdGAg+ltryxnMkBSl+zPLaizsIGGS57OihUBELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBSh4yO/hjkQLEFm07O2hURELTKXh8bllHAU2jdXwzn0pBQ==');
-    audio.play().catch(() => {});
+  // Request notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const playBetterSound = () => {
+    // Create AudioContext if it doesn't exist
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const ctx = audioContextRef.current;
+    
+    // Create a pleasant bell-like tone
+    const now = ctx.currentTime;
+    const oscillator1 = ctx.createOscillator();
+    const oscillator2 = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    // Two frequencies for a pleasant bell sound
+    oscillator1.frequency.value = 800;
+    oscillator2.frequency.value = 1000;
+    oscillator1.type = 'sine';
+    oscillator2.type = 'sine';
+    
+    // Volume envelope
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+    
+    oscillator1.start(now);
+    oscillator2.start(now);
+    oscillator1.stop(now + 1.5);
+    oscillator2.stop(now + 1.5);
+    
+    // Repeat the sound 3 times
+    setTimeout(() => {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      osc1.frequency.value = 800;
+      osc2.frequency.value = 1000;
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      const time = ctx.currentTime;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.3, time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 1.5);
+      osc1.start(time);
+      osc2.start(time);
+      osc1.stop(time + 1.5);
+      osc2.stop(time + 1.5);
+    }, 500);
+    
+    setTimeout(() => {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      osc1.frequency.value = 800;
+      osc2.frequency.value = 1000;
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      const time = ctx.currentTime;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.3, time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 1.5);
+      osc1.start(time);
+      osc2.start(time);
+      osc1.stop(time + 1.5);
+      osc2.stop(time + 1.5);
+    }, 1000);
   };
 
   const toggle = () => setIsActive(!isActive);
@@ -224,4 +340,3 @@ function SettingsModal({
     </div>
   );
 }
-
