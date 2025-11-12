@@ -325,4 +325,53 @@ export const deletePulseNote = async (id: number): Promise<void> => {
   return handleResponse(res);
 };
 
+// Blog Posts API
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  full_content?: string;
+  date: string;
+  published: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  const res = await fetch(`${API_BASE}/blog-posts`);
+  return handleResponse(res);
+}
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const res = await fetch(`${API_BASE}/blog-posts-all`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function createBlogPost(post: Omit<BlogPost, 'created_at' | 'updated_at'>): Promise<BlogPost> {
+  const res = await fetch(`${API_BASE}/blog-posts`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(post),
+  });
+  return handleResponse(res);
+}
+
+export async function updateBlogPost(id: string, post: Partial<Omit<BlogPost, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
+  const res = await fetch(`${API_BASE}/blog-posts/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(post),
+  });
+  return handleResponse(res);
+}
+
+export async function deleteBlogPost(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/blog-posts/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
 

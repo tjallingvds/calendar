@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { WeekView } from './components/WeekView';
 import { AddTaskDialog } from './components/AddTaskDialog';
 import { AddEventDialog } from './components/AddEventDialog';
@@ -8,6 +9,8 @@ import { PomodoroTimer } from './components/PomodoroTimer';
 import { WeeklyGoals } from './components/WeeklyGoals';
 import { PulseNotes } from './components/PulseNotes';
 import { Login } from './components/Login';
+import { BlogPost } from './components/BlogPost';
+import { BlogManager } from './components/BlogManager';
 import { Button } from './components/ui/button';
 import type { ScheduledTask, Event, PulseNote } from './lib/api';
 import {
@@ -168,19 +171,24 @@ function App() {
     }
   };
 
-  const [currentPage, setCurrentPage] = useState<'calendar' | 'goals' | 'notes' | 'focus'>('calendar');
+  const [currentPage, setCurrentPage] = useState<'calendar' | 'goals' | 'notes' | 'focus' | 'blog'>('calendar');
 
   // Show loading or login screen if not authenticated
   if (isCheckingAuth) {
     return null; // or a loading spinner
   }
 
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} error={loginError} />;
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <Routes>
+      {/* Public blog post route */}
+      <Route path="/blog/:id" element={<BlogPost />} />
+      
+      {/* Main app route */}
+      <Route path="*" element={
+        !isAuthenticated ? (
+          <Login onLogin={handleLogin} error={loginError} />
+        ) : (
+          <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
       <div className="border-b border-border/20 bg-background sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-8 py-4">
@@ -217,6 +225,14 @@ function App() {
                 className="h-8 px-3"
               >
                 Focus
+              </Button>
+              <Button
+                variant={currentPage === 'blog' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentPage('blog')}
+                className="h-8 px-3"
+              >
+                Blog
               </Button>
             </div>
             
@@ -336,6 +352,12 @@ function App() {
         </div>
       )}
 
+      {currentPage === 'blog' && (
+        <div className="max-w-[1400px] mx-auto px-8 py-10">
+          <BlogManager />
+        </div>
+      )}
+
       {/* Dialogs */}
       <AddTaskDialog
         isOpen={activeDialog === 'task'}
@@ -435,6 +457,9 @@ function App() {
         onTemplateApplied={handleTemplateApplied}
       />
     </div>
+        )
+      } />
+    </Routes>
   );
 }
 

@@ -206,6 +206,56 @@ app.delete('/api/pulse-notes/:id', authenticateToken, async (req, res) => {
   res.json({ success: true });
 });
 
+// ===== BLOG POSTS ===== 
+
+// Get all published blog posts (public)
+app.get('/api/blog-posts', async (req, res) => {
+  const posts = await query('SELECT * FROM blog_posts WHERE published = 1 ORDER BY date DESC', []);
+  res.json(posts);
+});
+
+// Get single blog post by ID (public)
+app.get('/api/blog-posts/:id', async (req, res) => {
+  const post = await get('SELECT * FROM blog_posts WHERE id = ? AND published = 1', [req.params.id]);
+  if (!post) return res.status(404).json({ error: 'Post not found' });
+  res.json(post);
+});
+
+// Get all blog posts including unpublished (protected)
+app.get('/api/blog-posts-all', authenticateToken, async (req, res) => {
+  const posts = await query('SELECT * FROM blog_posts ORDER BY date DESC', []);
+  res.json(posts);
+});
+
+// Create blog post (protected)
+app.post('/api/blog-posts', authenticateToken, async (req, res) => {
+  const { id, title, content, full_content, date, published } = req.body;
+  await run(
+    'INSERT INTO blog_posts (id, title, content, full_content, date, published) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, title, content, full_content || null, date, published ? 1 : 0]
+  );
+  const newPost = await get('SELECT * FROM blog_posts WHERE id = ?', [id]);
+  res.json(newPost);
+});
+
+// Update blog post (protected)
+app.put('/api/blog-posts/:id', authenticateToken, async (req, res) => {
+  const { title, content, full_content, date, published } = req.body;
+  await run(
+    `UPDATE blog_posts 
+     SET title = ?, content = ?, full_content = ?, date = ?, published = ?, updated_at = CURRENT_TIMESTAMP 
+     WHERE id = ?`,
+    [title, content, full_content || null, date, published ? 1 : 0, req.params.id]
+  );
+  res.json({ success: true });
+});
+
+// Delete blog post (protected)
+app.delete('/api/blog-posts/:id', authenticateToken, async (req, res) => {
+  await run('DELETE FROM blog_posts WHERE id = ?', [req.params.id]);
+  res.json({ success: true });
+});
+
 // ===== TEMPLATES ===== (Protected)
 
 app.get('/api/templates', authenticateToken, async (req, res) => {
