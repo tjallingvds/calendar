@@ -154,6 +154,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               <p className="garamond text-base sm:text-lg" style={{ color: '#666' }}>
                 Notes on living
               </p>
+              <p className="garamond text-sm mt-2" style={{ color: '#999' }}>
+                London, UK
+              </p>
             </div>
 
             {/* Notes Feed */}
