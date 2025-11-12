@@ -86,7 +86,8 @@ export function BlogPost() {
           </a>
         </div>
 
-            <div className="max-w-2xl mx-auto px-4 sm:px-8 py-12 sm:py-16" style={{ maxWidth: '42rem' }}>
+        <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
+          <div className="max-w-2xl mx-auto w-full" style={{ maxWidth: '42rem' }}>
           {/* Back button */}
           <Link 
             to="/" 
@@ -189,6 +190,7 @@ export function BlogPost() {
               })}
             </div>
           </article>
+          </div>
         </div>
       </div>
     </>
