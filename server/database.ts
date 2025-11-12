@@ -110,6 +110,19 @@ export function initDatabase() {
     )
   `);
 
+  // Blog Post Votes
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS blog_post_votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id TEXT NOT NULL,
+      ip_address TEXT NOT NULL,
+      vote_type TEXT NOT NULL CHECK(vote_type IN ('upvote', 'downvote')),
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
+      UNIQUE(post_id, ip_address)
+    )
+  `);
+
   console.log('SQLite database initialized at:', dbPath);
 }
 

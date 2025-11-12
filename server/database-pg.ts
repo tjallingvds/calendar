@@ -112,6 +112,18 @@ export async function initDatabase() {
       )
     `);
 
+    // Blog Post Votes
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS blog_post_votes (
+        id SERIAL PRIMARY KEY,
+        post_id TEXT NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+        ip_address TEXT NOT NULL,
+        vote_type TEXT NOT NULL CHECK(vote_type IN ('upvote', 'downvote')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(post_id, ip_address)
+      )
+    `);
+
     console.log('PostgreSQL database initialized');
   } finally {
     client.release();

@@ -1,13 +1,15 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { getBlogPosts } from '@/lib/api';
-import type { BlogPost as BlogPostType } from '@/lib/api';
+import { ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote } from '@/lib/api';
+import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
 export function BlogPost() {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [votes, setVotes] = useState<BlogPostVotes>({ upvotes: 0, downvotes: 0, total: 0 });
+  const [myVote, setMyVote] = useState<'upvote' | 'downvote' | null>(null);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -24,6 +26,45 @@ export function BlogPost() {
     };
     if (id) loadPost();
   }, [id]);
+
+  useEffect(() => {
+    const loadVotes = async () => {
+      if (!id) return;
+      try {
+        const [votesData, myVoteData] = await Promise.all([
+          getBlogPostVotes(id),
+          getMyVote(id),
+        ]);
+        setVotes(votesData);
+        setMyVote(myVoteData.vote);
+      } catch (error) {
+        console.error('Failed to load votes:', error);
+      }
+    };
+    if (id) loadVotes();
+  }, [id]);
+
+  const handleVote = async (voteType: 'upvote' | 'downvote') => {
+    if (!id) return;
+    
+    try {
+      if (myVote === voteType) {
+        // Remove vote if clicking same button
+        await removeVote(id);
+        setMyVote(null);
+      } else {
+        // Submit new vote
+        await submitVote(id, voteType);
+        setMyVote(voteType);
+      }
+      
+      // Reload votes
+      const votesData = await getBlogPostVotes(id);
+      setVotes(votesData);
+    } catch (error) {
+      console.error('Failed to vote:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -113,22 +154,55 @@ export function BlogPost() {
               </h1>
             </header>
 
+            {/* Voting */}
+            <div className="flex items-center gap-4 mb-8 sm:mb-12 pb-8 border-b border-border/20">
+              <button
+                onClick={() => handleVote('upvote')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  myVote === 'upvote'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                    : 'hover:bg-muted/50 text-muted-foreground'
+                }`}
+              >
+                <ThumbsUp className="h-5 w-5" />
+                <span className="garamond text-sm font-medium">{votes.upvotes}</span>
+              </button>
+              
+              <button
+                onClick={() => handleVote('downvote')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  myVote === 'downvote'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    : 'hover:bg-muted/50 text-muted-foreground'
+                }`}
+              >
+                <ThumbsDown className="h-5 w-5" />
+                <span className="garamond text-sm font-medium">{votes.downvotes}</span>
+              </button>
+              
+              <div className="garamond text-sm text-muted-foreground ml-2">
+                {votes.total > 0 && `+${votes.total}`}
+                {votes.total < 0 && votes.total}
+                {votes.total === 0 && '0'}
+              </div>
+            </div>
+
             {/* Content */}
             <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
                 {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
-                  // Handle markdown-style headers
-                  if (paragraph.startsWith('### ')) {
+                  // Handle markdown-style headers (with or without space after #)
+                  if (paragraph.startsWith('### ') || paragraph.startsWith('###')) {
                     return (
                       <h3 key={i} className="text-lg sm:text-xl font-medium mt-6 sm:mt-8 mb-3 sm:mb-4 tracking-tight">
-                        {paragraph.replace('### ', '')}
+                        {paragraph.replace(/^###\s*/, '')}
                       </h3>
                     );
                   }
                   
-                  if (paragraph.startsWith('## ')) {
+                  if (paragraph.startsWith('## ') || paragraph.startsWith('##')) {
                     return (
                       <h2 key={i} className="text-xl sm:text-2xl font-medium mt-8 sm:mt-12 mb-4 sm:mb-6 tracking-tight">
-                        {paragraph.replace('## ', '')}
+                        {paragraph.replace(/^##\s*/, '')}
                       </h2>
                     );
                   }
@@ -163,7 +237,7 @@ export function BlogPost() {
                         if (match) {
                           return (
                             <li key={idx} className="flex items-start gap-3">
-                              <span className="text-foreground/60 font-medium min-w-[1.5rem]">{match[1]}.</span>
+                              <span className="text-foreground/60 mt-1 font-medium min-w-[1.5rem]">{match[1]}.</span>
                               <span>{match[2]}</span>
                             </li>
                           );
