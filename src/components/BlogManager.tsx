@@ -170,17 +170,17 @@ export function BlogManager() {
 
             <div>
               <label className="text-sm font-medium mb-1.5 block">
-                Full Content (optional - use ## for headers)
+                Full Content (optional - markdown supported)
               </label>
               <textarea
                 value={formData.full_content}
                 onChange={(e) => setFormData({ ...formData, full_content: e.target.value })}
-                placeholder="Full post content with ## headers and **bold** text..."
+                placeholder="Full post content with markdown formatting..."
                 rows={15}
                 className="w-full px-3 py-2 border border-border/40 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20 text-sm font-mono resize-y"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Leave empty to use excerpt. Use ## for headers, **bold** for emphasis
+                Markdown: ## headers, **bold**, - bullets, 1. numbered lists
               </p>
             </div>
 

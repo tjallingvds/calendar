@@ -2,6 +2,8 @@ import { formatDate, parseTimeToMinutes } from '@/lib/dateUtils';
 import type { ScheduledTask, Event } from '@/lib/api';
 import { TaskCard } from './TaskCard';
 import { EventCard } from './EventCard';
+import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 
 interface TimeGridProps {
   weekDays: Date[];
@@ -11,6 +13,53 @@ interface TimeGridProps {
   onTaskClick?: (task: ScheduledTask) => void;
   onEventClick?: (event: Event) => void;
   onTimeSlotClick?: (date: string, time: string) => void;
+  onTaskDrop?: (taskId: number, newDate: string, newTime: string) => void;
+}
+
+// Draggable Task Wrapper
+function DraggableTask({ task, children, onClick }: { task: ScheduledTask; children: React.ReactNode; onClick?: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `task-${task.id}`,
+    data: { task },
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  } : { cursor: 'grab' };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      onClick={(e) => {
+        if (!isDragging) {
+          e.stopPropagation();
+          onClick?.();
+        }
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Droppable Time Slot
+function DroppableSlot({ id, children }: { id: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`relative ${isOver ? 'bg-blue-500/10' : ''}`}
+      style={{ minHeight: '72px' }}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function TimeGrid({
@@ -21,7 +70,23 @@ export function TimeGrid({
   onTaskClick,
   onEventClick,
   onTimeSlotClick,
+  onTaskDrop,
 }: TimeGridProps) {
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || !onTaskDrop) return;
+    
+    const taskData = active.data.current?.task as ScheduledTask;
+    const slotId = over.id as string; // format: "slot-YYYY-MM-DD-HH:MM"
+    
+    const [_, date, time] = slotId.split('-');
+    const fullDate = `${date}`;
+    
+    if (taskData && fullDate && time) {
+      onTaskDrop(taskData.id, fullDate, time);
+    }
+  };
   const getTasksForDayAndTime = (date: Date, time: string) => {
     const dateStr = formatDate(date);
     const prevDate = new Date(date);
@@ -104,9 +169,10 @@ export function TimeGrid({
   };
 
   return (
-    <div className="overflow-auto max-h-[calc(100vh-300px)]">
-      <div className="relative">
-        {timeSlots.map((time, timeIndex) => (
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="overflow-auto max-h-[calc(100vh-300px)]">
+        <div className="relative">
+          {timeSlots.map((time, timeIndex) => (
           <div key={timeIndex} className="grid grid-cols-8 border-b border-border/30 last:border-b-0" style={{ height: '72px' }}>
             {/* Time label */}
             <div className="w-20 flex items-start justify-end pr-5 pt-2">
@@ -118,13 +184,14 @@ export function TimeGrid({
               const dateStr = formatDate(day);
               const dayTasks = getTasksForDayAndTime(day, time);
               const dayEvents = timeIndex === 0 ? getEventsForDay(day) : [];
+              const slotId = `slot-${dateStr}-${time}`;
               
               return (
-                <div
-                  key={dayIndex}
-                  className="hover:bg-accent/[0.03] cursor-pointer transition-colors relative group"
-                  onClick={() => onTimeSlotClick?.(dateStr, time)}
-                >
+                <DroppableSlot key={dayIndex} id={slotId}>
+                  <div
+                    className="hover:bg-accent/[0.03] cursor-pointer transition-colors relative group h-full"
+                    onClick={() => onTimeSlotClick?.(dateStr, time)}
+                  >
                   {/* Show events at top of day */}
                   {timeIndex === 0 && dayEvents.map((event, eventIndex) => (
                     <div
@@ -170,22 +237,22 @@ export function TimeGrid({
                           height: `${getTaskHeight(task, day)}px`,
                           top: `${getTaskTop(task, time, day)}px`,
                         }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTaskClick?.(task);
-                        }}
                       >
-                        <TaskCard task={task} />
+                        <DraggableTask task={task} onClick={() => onTaskClick?.(task)}>
+                          <TaskCard task={task} />
+                        </DraggableTask>
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                </DroppableSlot>
               );
             })}
           </div>
         ))}
+        </div>
       </div>
-    </div>
+    </DndContext>
   );
 }
 
