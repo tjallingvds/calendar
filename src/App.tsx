@@ -272,6 +272,35 @@ function App() {
                 onTaskClick={handleTaskClick}
                 onEventClick={handleEventClick}
                 onTimeSlotClick={handleTimeSlotClick}
+                onTaskDrop={async (taskId, newDate, newTime) => {
+                  const task = tasks.find(t => t.id === taskId);
+                  if (!task) return;
+
+                  // Calculate new end time based on task duration
+                  const parseTimeToMinutes = (time: string) => {
+                    const [hours, minutes] = time.split(':').map(Number);
+                    return hours * 60 + minutes;
+                  };
+                  
+                  const startMinutes = parseTimeToMinutes(task.start_time);
+                  const endMinutes = parseTimeToMinutes(task.end_time);
+                  const duration = endMinutes >= startMinutes ? endMinutes - startMinutes : (24 * 60 - startMinutes) + endMinutes;
+                  
+                  const newStartMinutes = parseTimeToMinutes(newTime);
+                  const newEndMinutes = newStartMinutes + duration;
+                  
+                  const newEndHours = Math.floor(newEndMinutes / 60) % 24;
+                  const newEndMins = newEndMinutes % 60;
+                  const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMins).padStart(2, '0')}`;
+
+                  await updateScheduledTask(taskId, {
+                    date: newDate,
+                    start_time: newTime,
+                    end_time: newEndTime,
+                  });
+                  
+                  await loadWeekData();
+                }}
               />
             </div>
 

@@ -12,6 +12,7 @@ interface WeekViewProps {
   onTaskClick?: (task: ScheduledTask) => void;
   onEventClick?: (event: Event) => void;
   onTimeSlotClick?: (date: string, time: string) => void;
+  onTaskDrop?: (taskId: number, newDate: string, newTime: string) => void;
 }
 
 export function WeekView({
@@ -22,6 +23,7 @@ export function WeekView({
   onTaskClick,
   onEventClick,
   onTimeSlotClick,
+  onTaskDrop,
 }: WeekViewProps) {
   const weekStart = getWeekStart(currentDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -113,6 +115,7 @@ export function WeekView({
           onTaskClick={onTaskClick}
           onEventClick={onEventClick}
           onTimeSlotClick={onTimeSlotClick}
+          onTaskDrop={onTaskDrop}
         />
       </div>
     </div>

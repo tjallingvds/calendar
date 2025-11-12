@@ -91,14 +91,65 @@ app.get('/api/scheduled-tasks', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/scheduled-tasks', authenticateToken, async (req, res) => {
-  const { title, description, date, start_time, end_time, color } = req.body;
-  const result = await run('INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color) VALUES (?, ?, ?, ?, ?, ?)', [title, description || null, date, start_time, end_time, color || '#3b82f6']);
-  res.json({ id: result.lastInsertRowid, ...req.body });
+  const { title, description, date, start_time, end_time, color, recurrence_rule } = req.body;
+  
+  // If no recurrence, just create a single task
+  if (!recurrence_rule) {
+    const result = await run('INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color) VALUES (?, ?, ?, ?, ?, ?)', [title, description || null, date, start_time, end_time, color || '#3b82f6']);
+    res.json({ id: result.lastInsertRowid, ...req.body });
+    return;
+  }
+  
+  // Create parent task (the template)
+  const parentResult = await run('INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color, recurrence_rule) VALUES (?, ?, ?, ?, ?, ?, ?)', [title, description || null, date, start_time, end_time, color || '#3b82f6', recurrence_rule]);
+  const parentId = parentResult.lastInsertRowid;
+  
+  // Generate recurring instances for next 12 weeks
+  const startDate = new Date(date);
+  const instances = [];
+  
+  for (let i = 1; i <= 84; i++) { // 12 weeks = 84 days
+    let instanceDate = new Date(startDate);
+    
+    if (recurrence_rule === 'DAILY') {
+      instanceDate.setDate(startDate.getDate() + i);
+    } else if (recurrence_rule === 'WEEKLY') {
+      instanceDate.setDate(startDate.getDate() + (i * 7));
+    } else if (recurrence_rule === 'MONTHLY') {
+      instanceDate.setMonth(startDate.getMonth() + i);
+    } else if (recurrence_rule === 'WEEKDAYS') {
+      // Skip weekends
+      let daysAdded = 0;
+      let currentDate = new Date(startDate);
+      while (daysAdded < i) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        const dayOfWeek = currentDate.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+          daysAdded++;
+        }
+      }
+      instanceDate = currentDate;
+    }
+    
+    const instanceDateStr = instanceDate.toISOString().split('T')[0];
+    
+    // Only create instances for valid recurrence patterns
+    if (recurrence_rule === 'DAILY' || recurrence_rule === 'WEEKDAYS' || 
+        (recurrence_rule === 'WEEKLY' && i % 7 === 0) || 
+        (recurrence_rule === 'MONTHLY' && [30, 60, 90].includes(i))) {
+      const insertValues: any[] = [title, description || null, instanceDateStr, start_time, end_time, color || '#3b82f6', parentId];
+      await run('INSERT INTO scheduled_tasks (title, description, date, start_time, end_time, color, recurrence_parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+        insertValues);
+      instances.push(instanceDateStr);
+    }
+  }
+  
+  res.json({ id: parentId, instances: instances.length, ...req.body });
 });
 
 app.put('/api/scheduled-tasks/:id', authenticateToken, async (req, res) => {
-  const updates = [];
-  const values = [];
+  const updates: string[] = [];
+  const values: any[] = [];
   
   Object.entries(req.body).forEach(([key, value]) => {
     if (key === 'completed') {
@@ -137,8 +188,8 @@ app.post('/api/events', authenticateToken, async (req, res) => {
 });
 
 app.put('/api/events/:id', authenticateToken, async (req, res) => {
-  const updates = [];
-  const values = [];
+  const updates: string[] = [];
+  const values: any[] = [];
   
   Object.entries(req.body).forEach(([key, value]) => {
     if (key === 'completed') {
@@ -241,11 +292,12 @@ app.post('/api/blog-posts', authenticateToken, async (req, res) => {
 // Update blog post (protected)
 app.put('/api/blog-posts/:id', authenticateToken, async (req, res) => {
   const { title, content, full_content, date, published } = req.body;
+  const updateValues: any[] = [title, content, full_content || null, date, published ? 1 : 0, req.params.id];
   await run(
     `UPDATE blog_posts 
      SET title = ?, content = ?, full_content = ?, date = ?, published = ?, updated_at = CURRENT_TIMESTAMP 
      WHERE id = ?`,
-    [title, content, full_content || null, date, published ? 1 : 0, req.params.id]
+    updateValues
   );
   res.json({ success: true });
 });

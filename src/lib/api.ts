@@ -75,6 +75,8 @@ export interface ScheduledTask {
   completed_at?: string;
   not_completed_reason?: string;
   reflection_notes?: string;
+  recurrence_rule?: string;
+  recurrence_parent_id?: number;
 }
 
 export interface Event {
