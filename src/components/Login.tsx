@@ -122,8 +122,8 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
       <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
         {/* Page border frame */}
         <div className="page-border">
-        {/* Themes dropdown - top left */}
-        <div className="absolute top-6 left-6 z-10">
+        {/* Themes dropdown - top left (hidden on mobile) */}
+        <div className="absolute top-6 left-6 z-10 hidden sm:block">
           <div className="relative flex items-center">
             <button
               onClick={() => setShowThemeDropdown(!showThemeDropdown)}
@@ -279,59 +279,105 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
               
-              {/* Mobile-only links (shown under copyright) */}
-              <div className="flex sm:hidden items-center justify-center gap-3 mt-3">
-                <a
-                  href="https://www.linkedin.com/in/tjallingvds"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
-                >
-                  [linkedin]
-                </a>
-                <button
-                  onClick={() => {
-                    const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
-                    const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
-                    window.location.href = `mailto:${email}`;
-                  }}
-                  className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
-                >
-                  [email]
-                </button>
-                {!showPasswordInput ? (
+              {/* Mobile-only navigation */}
+              <div className="sm:hidden mt-3">
+                {/* Themes dropdown on mobile */}
+                <div className="flex items-center justify-center mb-2">
+                  <div className="relative flex items-center">
+                    <button
+                      onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+                      className="garamond text-xs hover:opacity-70 transition-opacity"
+                      style={{ color: '#999' }}
+                    >
+                      [{selectedTheme || 'themes'}]
+                    </button>
+                    {showThemeDropdown && themes.length > 0 && (
+                      <div 
+                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 bg-white border border-border/20 rounded shadow-md py-1 min-w-[120px]"
+                        style={{ zIndex: 50 }}
+                      >
+                        <button
+                          onClick={() => {
+                            setSelectedTheme('');
+                            setShowThemeDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${!selectedTheme ? 'font-medium' : ''}`}
+                          style={{ color: '#2a2a2a' }}
+                        >
+                          All themes
+                        </button>
+                        {themes.map((theme) => (
+                          <button
+                            key={theme}
+                            onClick={() => {
+                              setSelectedTheme(theme);
+                              setShowThemeDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${selectedTheme === theme ? 'font-medium' : ''}`}
+                            style={{ color: '#2a2a2a' }}
+                          >
+                            {theme}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Links */}
+                <div className="flex items-center justify-center gap-3">
+                  <a
+                    href="https://www.linkedin.com/in/tjallingvds"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+                  >
+                    [linkedin]
+                  </a>
                   <button
-                    onClick={() => setShowPasswordInput(true)}
+                    onClick={() => {
+                      const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
+                      const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
+                      window.location.href = `mailto:${email}`;
+                    }}
                     className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                   >
-                    [login]
+                    [email]
                   </button>
-                ) : (
-                  <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setError('');
-                      }}
-                      placeholder="password"
-                      className="px-2 py-0.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-xs w-28"
-                      autoFocus
-                      onBlur={() => {
-                        if (!password) {
-                          setTimeout(() => setShowPasswordInput(false), 200);
-                        }
-                      }}
-                    />
+                  {!showPasswordInput ? (
                     <button
-                      type="submit"
-                      className="garamond text-xs" style={{ color: '#999' }}
+                      onClick={() => setShowPasswordInput(true)}
+                      className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                     >
-                      →
+                      [login]
                     </button>
-                  </form>
-                )}
+                  ) : (
+                    <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setError('');
+                        }}
+                        placeholder="password"
+                        className="px-2 py-0.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-xs w-28"
+                        autoFocus
+                        onBlur={() => {
+                          if (!password) {
+                            setTimeout(() => setShowPasswordInput(false), 200);
+                          }
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        className="garamond text-xs" style={{ color: '#999' }}
+                      >
+                        →
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
               {error && (
                 <p className="garamond text-xs text-red-500 mt-2 sm:hidden text-center">{error}</p>
