@@ -115,8 +115,8 @@ export function BlogPost() {
       `}</style>
 
       <div className="min-h-screen bg-background relative">
-        {/* Small corner link */}
-        <div className="fixed top-6 right-6 z-10">
+        {/* Small corner links */}
+        <div className="fixed top-6 right-6 z-10 flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
@@ -125,6 +125,22 @@ export function BlogPost() {
           >
             [linkedin]
           </a>
+          <button
+            onClick={() => {
+              const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
+              const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
+              window.location.href = `mailto:${email}`;
+            }}
+            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+          >
+            [email]
+          </button>
+          <Link
+            to="/"
+            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+          >
+            [login]
+          </Link>
         </div>
 
         <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
@@ -244,6 +260,13 @@ export function BlogPost() {
                 <ArrowUp className="h-4 w-4" />
                 <span className="garamond text-sm font-medium">{votes.upvotes}</span>
               </button>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 border-t border-border/20 text-center">
+              <p className="garamond text-xs text-muted-foreground/60">
+                © {new Date().getFullYear()} Tjalling van der Schaar
+              </p>
             </div>
           </article>
           </div>
