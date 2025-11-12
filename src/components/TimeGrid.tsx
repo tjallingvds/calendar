@@ -95,11 +95,12 @@ export function TimeGrid({
     if (end < start && task.date !== dateStr) {
       // Next day portion starts at 00:00
       const offset = 0 - slotStart;
-      return (offset / 30) * 72;
+      return Math.max(0, (offset / 30) * 72);
     }
     
     const offset = start - slotStart;
-    return (offset / 30) * 72;
+    // Calculate exact pixel position based on minutes offset
+    return Math.max(0, (offset / 30) * 72);
   };
 
   return (
@@ -139,19 +140,27 @@ export function TimeGrid({
                     </div>
                   ))}
 
-                  {/* Show tasks that start in this time slot */}
+                  {/* Show tasks that start in or before this time slot (but only render once) */}
                   {dayTasks.map((task) => {
                     const taskStart = parseTimeToMinutes(task.start_time);
                     const taskEnd = parseTimeToMinutes(task.end_time);
-                    const timeMinutes = parseTimeToMinutes(time);
                     const spansNextDay = taskEnd < taskStart;
                     
-                    // Determine if this is the start position for this task
-                    // Task starts in this 30-min slot if taskStart is between timeMinutes and timeMinutes+30
-                    const isFirstDayStart = task.date === dateStr && taskStart >= timeMinutes && taskStart < timeMinutes + 30;
-                    const isNextDayStart = spansNextDay && task.date !== dateStr && time === '00:00';
+                    // Find which slot should render this task (earliest slot it appears in)
+                    const firstSlot = timeSlots.find((slot) => {
+                      const slotMinutes = parseTimeToMinutes(slot);
+                      if (task.date === dateStr) {
+                        // Task on this day: show in first slot that task appears in
+                        return taskStart < slotMinutes + 30 && taskStart >= slotMinutes;
+                      } else if (spansNextDay && task.date !== dateStr && slot === '00:00') {
+                        // Next-day portion of spanning task
+                        return true;
+                      }
+                      return false;
+                    });
                     
-                    if (!isFirstDayStart && !isNextDayStart) return null;
+                    // Only render in the first slot where this task appears
+                    if (firstSlot !== time) return null;
                     
                     return (
                       <div
