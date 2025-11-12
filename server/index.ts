@@ -37,6 +37,31 @@ app.use((req, res, next) => {
 
 // Database is initialized in db.ts
 
+// Add theme column migration if it doesn't exist
+(async () => {
+  try {
+    // Check if theme column exists in blog_posts table
+    const columns = await query(
+      process.env.DATABASE_URL 
+        ? `SELECT column_name FROM information_schema.columns WHERE table_name = 'blog_posts' AND column_name = 'theme'`
+        : `PRAGMA table_info(blog_posts)`,
+      []
+    );
+    
+    const hasThemeColumn = process.env.DATABASE_URL 
+      ? columns.length > 0
+      : columns.some((col: any) => col.name === 'theme');
+    
+    if (!hasThemeColumn) {
+      console.log('Adding theme column to blog_posts table...');
+      await run('ALTER TABLE blog_posts ADD COLUMN theme TEXT', []);
+      console.log('Theme column added successfully');
+    }
+  } catch (error) {
+    console.log('Theme column migration check:', error);
+  }
+})();
+
 // ===== AUTHENTICATION =====
 
 app.post('/api/auth/login', (req, res) => {

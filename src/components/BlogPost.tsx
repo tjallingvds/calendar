@@ -1,15 +1,19 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowUp } from 'lucide-react';
-import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote } from '@/lib/api';
+import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login } from '@/lib/api';
 import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
 export function BlogPost() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState<BlogPostVotes>({ upvotes: 0, downvotes: 0, total: 0 });
   const [myVote, setMyVote] = useState<'upvote' | 'downvote' | null>(null);
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     const loadPost = async () => {
@@ -63,6 +67,22 @@ export function BlogPost() {
       setVotes(votesData);
     } catch (error) {
       console.error('Failed to vote:', error);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password.trim()) {
+      setLoginError('Please enter a password');
+      return;
+    }
+
+    try {
+      const { token } = await login(password);
+      localStorage.setItem('auth_token', token);
+      navigate('/dashboard');
+    } catch (error: any) {
+      setLoginError(error.message || 'Invalid password');
     }
   };
 
@@ -173,12 +193,42 @@ export function BlogPost() {
           >
             [email]
           </button>
-          <Link
-            to="/"
-            className="garamond text-xs" style={{ color: '#999' }}
-          >
-            [login]
-          </Link>
+          {!showPasswordInput ? (
+            <button
+              onClick={() => setShowPasswordInput(true)}
+              className="garamond text-xs" style={{ color: '#999' }}
+            >
+              [login]
+            </button>
+          ) : (
+            <form onSubmit={handleLogin} className="flex items-center gap-1.5">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError('');
+                }}
+                placeholder="password"
+                className="px-2 py-0.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-xs w-28"
+                autoFocus
+                onBlur={() => {
+                  if (!password) {
+                    setTimeout(() => setShowPasswordInput(false), 200);
+                  }
+                }}
+              />
+              <button
+                type="submit"
+                className="garamond text-xs" style={{ color: '#999' }}
+              >
+                →
+              </button>
+            </form>
+          )}
+          {loginError && (
+            <p className="garamond text-xs text-red-500 absolute top-full right-0 mt-1">{loginError}</p>
+          )}
         </div>
 
         <div className="px-4 sm:px-8 py-12 sm:py-16">
@@ -343,13 +393,43 @@ export function BlogPost() {
                 >
                   [email]
                 </button>
-                <Link
-                  to="/"
-                  className="garamond text-xs" style={{ color: '#999' }}
-                >
-                  [login]
-                </Link>
+                {!showPasswordInput ? (
+                  <button
+                    onClick={() => setShowPasswordInput(true)}
+                    className="garamond text-xs" style={{ color: '#999' }}
+                  >
+                    [login]
+                  </button>
+                ) : (
+                  <form onSubmit={handleLogin} className="flex items-center gap-1.5">
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setLoginError('');
+                      }}
+                      placeholder="password"
+                      className="px-2 py-0.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-xs w-28"
+                      autoFocus
+                      onBlur={() => {
+                        if (!password) {
+                          setTimeout(() => setShowPasswordInput(false), 200);
+                        }
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="garamond text-xs" style={{ color: '#999' }}
+                    >
+                      →
+                    </button>
+                  </form>
+                )}
               </div>
+              {loginError && (
+                <p className="garamond text-xs text-red-500 mt-2 sm:hidden text-center">{loginError}</p>
+              )}
             </div>
           </article>
           </div>
