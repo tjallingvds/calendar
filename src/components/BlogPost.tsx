@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowUp } from 'lucide-react';
-import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login } from '@/lib/api';
+import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login, getBlogThemes } from '@/lib/api';
 import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
 export function BlogPost() {
@@ -14,6 +14,8 @@ export function BlogPost() {
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [themes, setThemes] = useState<string[]>([]);
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -30,6 +32,19 @@ export function BlogPost() {
     };
     if (id) loadPost();
   }, [id]);
+
+  // Load themes
+  useEffect(() => {
+    const loadThemes = async () => {
+      try {
+        const themesData = await getBlogThemes();
+        setThemes(themesData);
+      } catch (error) {
+        console.error('Failed to load themes:', error);
+      }
+    };
+    loadThemes();
+  }, []);
 
   useEffect(() => {
     const loadVotes = async () => {
@@ -86,6 +101,26 @@ export function BlogPost() {
     }
   };
 
+  const calculateReadingTime = (content: string): number => {
+    const words = content.trim().split(/\s+/).length;
+    const wordsPerMinute = 200;
+    return Math.ceil(words / wordsPerMinute);
+  };
+
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (loading) {
     return (
       <>
@@ -129,6 +164,9 @@ export function BlogPost() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap');
+        html {
+          scroll-behavior: smooth;
+        }
         .garamond {
           font-family: 'EB Garamond', serif;
         }
@@ -147,10 +185,10 @@ export function BlogPost() {
           float: left;
           font-size: 3.5em;
           line-height: 0.85;
-          margin-right: 0.1em;
-          margin-top: 0.05em;
+          margin-right: 0.15em;
+          margin-top: 0.08em;
           font-weight: 500;
-          color: #2a2a2a;
+          color: #1a1a1a;
         }
         .blog-blockquote {
           border-left: 2px solid #d0d0d0;
@@ -159,6 +197,65 @@ export function BlogPost() {
           font-style: italic;
           color: #4a4a4a;
         }
+        .blog-content {
+          line-height: 1.8;
+          color: #1a1a1a;
+        }
+        .footnote {
+          font-size: 0.85em;
+          vertical-align: super;
+          color: #666;
+          text-decoration: none;
+          margin: 0 0.1em;
+        }
+        .footnote:hover {
+          color: #2a2a2a;
+        }
+        .footnotes-section {
+          border-top: 1px solid #e5e5e5;
+          margin-top: 3rem;
+          padding-top: 2rem;
+          font-size: 0.9em;
+          color: #666;
+        }
+        .ai-statement {
+          background: rgba(0,0,0,0.02);
+          border-left: 2px solid #999;
+          padding: 1rem 1.5rem;
+          font-size: 0.9em;
+          color: #666;
+          font-style: italic;
+        }
+        .shoutout {
+          background: rgba(0,0,0,0.015);
+          border-radius: 3px;
+          padding: 0.1em 0.3em;
+          font-weight: 500;
+        }
+        .back-to-top {
+          position: fixed;
+          bottom: 2rem;
+          right: 2rem;
+          background: white;
+          border: 1px solid #e5e5e5;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          z-index: 100;
+        }
+        .back-to-top.visible {
+          opacity: 1;
+        }
+        .back-to-top:hover {
+          background: rgba(0,0,0,0.02);
+        }
         @media (max-width: 640px) {
           .page-border {
             margin: 1rem;
@@ -166,6 +263,11 @@ export function BlogPost() {
           }
           .dropcap::first-letter {
             font-size: 2.5em;
+            margin-right: 0.12em;
+          }
+          .back-to-top {
+            bottom: 1rem;
+            right: 1rem;
           }
         }
       `}</style>
@@ -173,13 +275,52 @@ export function BlogPost() {
       <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
         {/* Page border frame */}
         <div className="page-border">
+        {/* Themes dropdown - top left */}
+        <div className="absolute top-6 left-6 z-10">
+          <div className="relative flex items-center">
+            <button
+              onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+              className="garamond text-xs hover:opacity-70 transition-opacity"
+              style={{ color: '#999' }}
+            >
+              [{post?.theme || 'themes'}]
+            </button>
+            {showThemeDropdown && themes.length > 0 && (
+              <div 
+                className="absolute top-full left-0 mt-1 bg-white border border-border/20 rounded shadow-md py-1 min-w-[120px]"
+                style={{ zIndex: 50 }}
+              >
+                <Link
+                  to="/"
+                  onClick={() => setShowThemeDropdown(false)}
+                  className="block w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10"
+                  style={{ color: '#2a2a2a' }}
+                >
+                  All themes
+                </Link>
+                {themes.map((theme) => (
+                  <Link
+                    key={theme}
+                    to={`/?theme=${encodeURIComponent(theme)}`}
+                    onClick={() => setShowThemeDropdown(false)}
+                    className={`block w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${post?.theme === theme ? 'font-medium' : ''}`}
+                    style={{ color: '#2a2a2a' }}
+                  >
+                    {theme}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Small corner links (hidden on mobile) */}
         <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
             rel="noopener noreferrer"
-            className="garamond text-xs" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
           >
             [linkedin]
           </a>
@@ -189,14 +330,14 @@ export function BlogPost() {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
           >
             [email]
           </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
-              className="garamond text-xs" style={{ color: '#999' }}
+              className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
             >
               [login]
             </button>
@@ -246,21 +387,57 @@ export function BlogPost() {
           <article>
             {/* Header */}
             <header className="mb-8 sm:mb-12">
-              <time className="small-caps garamond text-xs sm:text-sm text-muted-foreground/60 block mb-2 sm:mb-3">
-                {new Date(post.date).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </time>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground/60 mb-2 sm:mb-3">
+                <time className="small-caps garamond">
+                  {new Date(post.date).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </time>
+                <span style={{ color: '#d0d0d0' }}>•</span>
+                <span className="garamond">
+                  {calculateReadingTime(post.full_content || post.content)} min read
+                </span>
+              </div>
               <h1 className="garamond text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
                 {post.title}
               </h1>
             </header>
 
             {/* Content */}
-            <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
+            <div className="blog-content garamond text-base sm:text-lg space-y-4 sm:space-y-6">
                 {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
+                  // Handle AI statement (lines starting with "[AI]")
+                  if (paragraph.trim().startsWith('[AI]')) {
+                    return (
+                      <div key={i} className="ai-statement">
+                        {paragraph.replace(/^\[AI\]\s*/, '')}
+                      </div>
+                    );
+                  }
+                  
+                  // Handle footnotes section (lines starting with "[^1]:")
+                  if (paragraph.trim().match(/^\[\^\d+\]:/)) {
+                    const footnotes = paragraph.split('\n').filter(line => line.trim().match(/^\[\^\d+\]:/));
+                    return (
+                      <div key={i} className="footnotes-section">
+                        <h4 className="text-sm font-medium mb-3">Notes</h4>
+                        {footnotes.map((note, idx) => {
+                          const match = note.match(/^\[\^(\d+)\]:\s*(.+)/);
+                          if (match) {
+                            return (
+                              <p key={idx} id={`fn-${match[1]}`} className="mb-2">
+                                <a href={`#fnref-${match[1]}`} className="footnote">[{match[1]}]</a> {match[2]}
+                              </p>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    );
+                  }
+                  
                   // Handle blockquotes (lines starting with "> ")
                   if (paragraph.trim().startsWith('> ')) {
                     return (
@@ -341,11 +518,52 @@ export function BlogPost() {
                   );
                 }
                 
+                // Process inline footnotes [^1] and shoutouts @name
+                const processInlineMarkdown = (text: string) => {
+                  const parts = [];
+                  let lastIndex = 0;
+                  
+                  // Match footnotes [^1] and shoutouts @name
+                  const regex = /(\[\^(\d+)\])|(@\w+)/g;
+                  let match;
+                  
+                  while ((match = regex.exec(text)) !== null) {
+                    // Add text before match
+                    if (match.index > lastIndex) {
+                      parts.push(text.substring(lastIndex, match.index));
+                    }
+                    
+                    if (match[1]) {
+                      // Footnote reference
+                      parts.push(
+                        <a key={match.index} href={`#fn-${match[2]}`} id={`fnref-${match[2]}`} className="footnote">
+                          [{match[2]}]
+                        </a>
+                      );
+                    } else if (match[3]) {
+                      // Shoutout @name
+                      parts.push(
+                        <span key={match.index} className="shoutout">{match[3]}</span>
+                      );
+                    }
+                    
+                    lastIndex = regex.lastIndex;
+                  }
+                  
+                  // Add remaining text
+                  if (lastIndex < text.length) {
+                    parts.push(text.substring(lastIndex));
+                  }
+                  
+                  return parts.length > 0 ? parts : text;
+                };
+                
                 // Regular paragraph (with dropcap on first paragraph)
+                const processedContent = processInlineMarkdown(paragraph);
                 if (i === 0) {
-                  return <p key={i} className="dropcap">{paragraph}</p>;
+                  return <p key={i} className="dropcap">{processedContent}</p>;
                 }
-                return <p key={i}>{paragraph}</p>;
+                return <p key={i}>{processedContent}</p>;
               })}
             </div>
 
@@ -379,7 +597,7 @@ export function BlogPost() {
                   href="https://www.linkedin.com/in/tjallingvds"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="garamond text-xs" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                 >
                   [linkedin]
                 </a>
@@ -389,14 +607,14 @@ export function BlogPost() {
                     const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
                     window.location.href = `mailto:${email}`;
                   }}
-                  className="garamond text-xs" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                 >
                   [email]
                 </button>
                 {!showPasswordInput ? (
                   <button
                     onClick={() => setShowPasswordInput(true)}
-                    className="garamond text-xs" style={{ color: '#999' }}
+                    className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                   >
                     [login]
                   </button>
@@ -435,6 +653,17 @@ export function BlogPost() {
           </div>
         </div>
         </div>
+        
+        {/* Back to top button */}
+        <button
+          onClick={scrollToTop}
+          className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
+          aria-label="Back to top"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 12L8 4M8 4L4 8M8 4L12 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
       </div>
     </>
   );
