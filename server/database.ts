@@ -104,6 +104,7 @@ export function initDatabase() {
       content TEXT NOT NULL,
       full_content TEXT,
       date TEXT NOT NULL,
+      theme TEXT,
       published INTEGER DEFAULT 1,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP

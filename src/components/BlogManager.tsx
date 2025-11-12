@@ -14,6 +14,7 @@ export function BlogManager() {
     content: '',
     full_content: '',
     date: new Date().toISOString().split('T')[0],
+    theme: '',
     published: 1,
   });
 
@@ -35,6 +36,7 @@ export function BlogManager() {
       content: '',
       full_content: '',
       date: new Date().toISOString().split('T')[0],
+      theme: '',
       published: 1,
     });
   };
@@ -48,6 +50,7 @@ export function BlogManager() {
       content: post.content,
       full_content: post.full_content || '',
       date: post.date,
+      theme: post.theme || '',
       published: post.published,
     });
   };
@@ -67,6 +70,7 @@ export function BlogManager() {
           content: formData.content,
           full_content: formData.full_content,
           date: formData.date,
+          theme: formData.theme,
           published: formData.published,
         });
       }
@@ -79,6 +83,7 @@ export function BlogManager() {
         content: '',
         full_content: '',
         date: new Date().toISOString().split('T')[0],
+        theme: '',
         published: 1,
       });
     } catch (error: any) {
@@ -153,6 +158,20 @@ export function BlogManager() {
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 className="w-full px-3 py-2 border border-border/40 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20 text-sm"
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Theme (optional)</label>
+              <input
+                type="text"
+                value={formData.theme}
+                onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                placeholder="e.g., Philosophy, Technology, Travel"
+                className="w-full px-3 py-2 border border-border/40 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20 text-sm"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Group posts by theme for easy filtering
+              </p>
             </div>
 
             <div>

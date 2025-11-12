@@ -261,8 +261,24 @@ app.delete('/api/pulse-notes/:id', authenticateToken, async (req, res) => {
 
 // Get all published blog posts (public)
 app.get('/api/blog-posts', async (req, res) => {
-  const posts = await query('SELECT * FROM blog_posts WHERE published = 1 ORDER BY date DESC', []);
+  const { theme } = req.query;
+  let sql = 'SELECT * FROM blog_posts WHERE published = 1';
+  const params: any[] = [];
+  
+  if (theme) {
+    sql += ' AND theme = ?';
+    params.push(theme);
+  }
+  
+  sql += ' ORDER BY date DESC';
+  const posts = await query(sql, params);
   res.json(posts);
+});
+
+// Get all unique themes (public)
+app.get('/api/blog-posts/themes', async (req, res) => {
+  const themes = await query('SELECT DISTINCT theme FROM blog_posts WHERE published = 1 AND theme IS NOT NULL ORDER BY theme', []);
+  res.json(themes.map((row: any) => row.theme));
 });
 
 // Get single blog post by ID (public)
@@ -280,10 +296,10 @@ app.get('/api/blog-posts-all', authenticateToken, async (req, res) => {
 
 // Create blog post (protected)
 app.post('/api/blog-posts', authenticateToken, async (req, res) => {
-  const { id, title, content, full_content, date, published } = req.body;
+  const { id, title, content, full_content, date, theme, published } = req.body;
   await run(
-    'INSERT INTO blog_posts (id, title, content, full_content, date, published) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, title, content, full_content || null, date, published ? 1 : 0]
+    'INSERT INTO blog_posts (id, title, content, full_content, date, theme, published) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, title, content, full_content || null, date, theme || null, published ? 1 : 0]
   );
   const newPost = await get('SELECT * FROM blog_posts WHERE id = ?', [id]);
   res.json(newPost);
@@ -291,11 +307,11 @@ app.post('/api/blog-posts', authenticateToken, async (req, res) => {
 
 // Update blog post (protected)
 app.put('/api/blog-posts/:id', authenticateToken, async (req, res) => {
-  const { title, content, full_content, date, published } = req.body;
-  const updateValues: any[] = [title, content, full_content || null, date, published ? 1 : 0, req.params.id];
+  const { title, content, full_content, date, theme, published } = req.body;
+  const updateValues: any[] = [title, content, full_content || null, date, theme || null, published ? 1 : 0, req.params.id];
   await run(
     `UPDATE blog_posts 
-     SET title = ?, content = ?, full_content = ?, date = ?, published = ?, updated_at = CURRENT_TIMESTAMP 
+     SET title = ?, content = ?, full_content = ?, date = ?, theme = ?, published = ?, updated_at = CURRENT_TIMESTAMP 
      WHERE id = ?`,
     updateValues
   );

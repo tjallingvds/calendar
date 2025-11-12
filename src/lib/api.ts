@@ -334,13 +334,20 @@ export interface BlogPost {
   content: string;
   full_content?: string;
   date: string;
+  theme?: string;
   published: number;
   created_at: string;
   updated_at: string;
 }
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  const res = await fetch(`${API_BASE}/blog-posts`);
+export async function getBlogPosts(theme?: string): Promise<BlogPost[]> {
+  const url = theme ? `${API_BASE}/blog-posts?theme=${encodeURIComponent(theme)}` : `${API_BASE}/blog-posts`;
+  const res = await fetch(url);
+  return handleResponse(res);
+}
+
+export async function getBlogThemes(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/blog-posts/themes`);
   return handleResponse(res);
 }
 
