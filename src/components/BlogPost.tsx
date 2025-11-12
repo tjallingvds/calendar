@@ -114,7 +114,7 @@ export function BlogPost() {
 
             {/* Content */}
             <div className="garamond text-lg leading-relaxed text-foreground/90 space-y-6">
-              {(post.fullContent || post.content).split('\n\n').map((paragraph, i) => {
+              {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
                 // Handle markdown-style headers
                 if (paragraph.startsWith('## ')) {
                   return (

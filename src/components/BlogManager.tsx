@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import type { BlogPost } from '@/lib/api';
 import { getAllBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost } from '@/lib/api';
 
