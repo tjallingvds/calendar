@@ -55,6 +55,24 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
       <div className="min-h-screen bg-background relative">
         {/* Small corner links */}
         <div className="fixed top-6 right-6 z-10 flex items-center gap-3">
+          <a
+            href="https://www.linkedin.com/in/tjallingvds"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+          >
+            [linkedin]
+          </a>
+          <button
+            onClick={() => {
+              const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
+              const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
+              window.location.href = `mailto:${email}`;
+            }}
+            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+          >
+            [email]
+          </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
@@ -88,14 +106,6 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               </button>
             </form>
           )}
-          <a
-            href="https://www.linkedin.com/in/tjallingvds"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
-          >
-            [linkedin]
-          </a>
           {error && (
             <p className="garamond text-xs text-red-500 absolute top-full right-0 mt-1">{error}</p>
           )}
@@ -142,8 +152,8 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
 
             {/* Footer */}
             <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 border-t border-border/20 text-center">
-              <p className="garamond text-xs sm:text-sm text-muted-foreground/60">
-                tjallingvdschaar[at]gmail[dot]com
+              <p className="garamond text-xs text-muted-foreground/60">
+                © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
             </div>
           </div>
