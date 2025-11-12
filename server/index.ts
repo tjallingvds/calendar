@@ -419,8 +419,10 @@ app.post('/api/blog-posts/:id/vote', async (req, res) => {
 // Remove vote
 app.delete('/api/blog-posts/:id/vote', async (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  await run('DELETE FROM blog_post_votes WHERE post_id = ? AND ip_address = ?', [req.params.id, ip]);
-  res.json({ success: true });
+  console.log(`Removing vote for post ${req.params.id} from IP ${ip}`);
+  const result = await run('DELETE FROM blog_post_votes WHERE post_id = ? AND ip_address = ?', [req.params.id, ip]);
+  console.log(`Vote removal result:`, result);
+  res.json({ success: true, deleted: result.changes });
 });
 
 // ===== TEMPLATES ===== (Protected)
