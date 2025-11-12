@@ -238,16 +238,17 @@ export function BlogPost() {
           right: 2rem;
           background: white;
           border: 1px solid #e5e5e5;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          border-radius: 2px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           opacity: 0;
-          transition: opacity 0.3s ease;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: all 0.3s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          color: #999;
           z-index: 100;
         }
         .back-to-top.visible {
@@ -255,6 +256,8 @@ export function BlogPost() {
         }
         .back-to-top:hover {
           background: rgba(0,0,0,0.02);
+          color: #666;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
         @media (max-width: 640px) {
           .page-border {
@@ -569,17 +572,16 @@ export function BlogPost() {
 
             {/* Voting */}
             <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
-              <div className="flex items-center justify-between">
-                <p className="garamond text-sm text-muted-foreground/70">Thoughts?</p>
+              <div className="flex items-center justify-end">
                 <button
                   onClick={() => handleVote('upvote')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all ${
                     myVote === 'upvote'
-                      ? 'bg-foreground/10 text-foreground'
+                      ? 'bg-foreground/8 text-foreground border border-foreground/10'
                       : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
                   }`}
                 >
-                  <ArrowUp className="h-3.5 w-3.5" />
+                  <ArrowUp className={`h-3.5 w-3.5 ${myVote === 'upvote' ? 'stroke-[2]' : ''}`} />
                   <span className="garamond text-sm">{votes.upvotes}</span>
                 </button>
               </div>
@@ -660,7 +662,7 @@ export function BlogPost() {
           className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
           aria-label="Back to top"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 12L8 4M8 4L4 8M8 4L12 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
