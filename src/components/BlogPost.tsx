@@ -112,16 +112,30 @@ export function BlogPost() {
         .garamond {
           font-family: 'EB Garamond', serif;
         }
+        .page-border {
+          border: 1px solid #f0f0f0;
+          margin: 2rem;
+          min-height: calc(100vh - 4rem);
+          position: relative;
+        }
+        @media (max-width: 640px) {
+          .page-border {
+            margin: 1rem;
+            min-height: calc(100vh - 2rem);
+          }
+        }
       `}</style>
 
-      <div className="min-h-screen bg-background relative">
+      <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
+        {/* Page border frame */}
+        <div className="page-border">
         {/* Small corner links */}
-        <div className="fixed top-6 right-6 z-10 flex items-center gap-3">
+        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
             rel="noopener noreferrer"
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="garamond text-xs" style={{ color: '#999' }}
           >
             [linkedin]
           </a>
@@ -131,19 +145,19 @@ export function BlogPost() {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="garamond text-xs" style={{ color: '#999' }}
           >
             [email]
           </button>
           <Link
             to="/"
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="garamond text-xs" style={{ color: '#999' }}
           >
             [login]
           </Link>
         </div>
 
-        <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
+        <div className="px-4 sm:px-8 py-12 sm:py-16">
           <div className="max-w-2xl mx-auto w-full" style={{ maxWidth: '42rem' }}>
           {/* Back button */}
           <Link 
@@ -266,13 +280,14 @@ export function BlogPost() {
             </div>
 
             {/* Footer */}
-            <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 border-t border-border/20 text-center">
-              <p className="garamond text-xs text-muted-foreground/60">
+            <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 text-center" style={{ borderTop: '1px solid #e5e5e5' }}>
+              <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
             </div>
           </article>
           </div>
+        </div>
         </div>
       </div>
     </>

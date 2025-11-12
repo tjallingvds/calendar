@@ -147,11 +147,11 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             <div className="px-4 sm:px-8 py-12 sm:py-16">
               <div className="max-w-2xl mx-auto w-full" style={{ maxWidth: '42rem' }}>
             {/* Header */}
-            <div className="mb-20 sm:mb-28 text-center">
-              <h1 className="garamond text-4xl sm:text-5xl font-medium mb-5 tracking-tight" style={{ letterSpacing: '0.01em' }}>
+            <div className="mb-16 sm:mb-24">
+              <h1 className="garamond text-2xl sm:text-3xl font-medium mb-2 tracking-tight">
                 Tjalling van der Schaar
               </h1>
-              <p className="garamond text-lg" style={{ color: '#666', fontStyle: 'italic' }}>
+              <p className="garamond text-base sm:text-lg" style={{ color: '#666' }}>
                 Notes on living
               </p>
             </div>
