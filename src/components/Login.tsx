@@ -102,11 +102,11 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
         }
         .blog-card {
           transition: all 0.3s ease;
-          opacity: 1;
+          border-radius: 2px;
         }
         .blog-card:hover {
-          opacity: 0.85;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+          background: rgba(0,0,0,0.01);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
         @media (max-width: 640px) {
           .page-border {
@@ -120,8 +120,8 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
         {/* Page border frame */}
         <div className="page-border">
         {/* Themes dropdown - top left */}
-        <div className="absolute top-6 left-6 z-10 flex items-center">
-          <div className="relative">
+        <div className="absolute top-6 left-6 z-10">
+          <div className="relative flex items-center">
             <button
               onClick={() => setShowThemeDropdown(!showThemeDropdown)}
               className="garamond text-xs hover:opacity-70 transition-opacity"
