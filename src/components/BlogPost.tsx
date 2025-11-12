@@ -86,11 +86,11 @@ export function BlogPost() {
           </a>
         </div>
 
-        <div className="max-w-2xl mx-auto px-8 py-16">
+        <div className="max-w-2xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
           {/* Back button */}
           <Link 
             to="/" 
-            className="garamond inline-flex items-center gap-2 text-base text-foreground/60 hover:text-foreground transition-colors mb-12"
+            className="garamond inline-flex items-center gap-2 text-sm sm:text-base text-foreground/60 hover:text-foreground transition-colors mb-8 sm:mb-12"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -99,30 +99,72 @@ export function BlogPost() {
           {/* Article */}
           <article>
             {/* Header */}
-            <header className="mb-12">
-              <time className="garamond text-sm text-muted-foreground/60 block mb-3">
+            <header className="mb-8 sm:mb-12">
+              <time className="garamond text-xs sm:text-sm text-muted-foreground/60 block mb-2 sm:mb-3">
                 {new Date(post.date).toLocaleDateString('en-US', { 
                   month: 'long', 
                   day: 'numeric',
                   year: 'numeric'
                 })}
               </time>
-              <h1 className="garamond text-5xl font-medium tracking-tight">
+              <h1 className="garamond text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
                 {post.title}
               </h1>
             </header>
 
             {/* Content */}
-            <div className="garamond text-lg leading-relaxed text-foreground/90 space-y-6">
+            <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
               {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
                 // Handle markdown-style headers
                 if (paragraph.startsWith('## ')) {
                   return (
-                    <h2 key={i} className="text-2xl font-medium mt-12 mb-6 tracking-tight">
+                    <h2 key={i} className="text-xl sm:text-2xl font-medium mt-8 sm:mt-12 mb-4 sm:mb-6 tracking-tight">
                       {paragraph.replace('## ', '')}
                     </h2>
                   );
                 }
+                
+                // Handle bullet lists (lines starting with "- ")
+                const bulletLines = paragraph.split('\n').filter(line => line.trim().startsWith('- '));
+                if (bulletLines.length > 0 && paragraph.trim().startsWith('- ')) {
+                  return (
+                    <ul key={i} className="list-none space-y-2 ml-4 sm:ml-6">
+                      {paragraph.split('\n').map((line, idx) => {
+                        if (line.trim().startsWith('- ')) {
+                          return (
+                            <li key={idx} className="flex items-start gap-3">
+                              <span className="text-foreground/60 mt-1">•</span>
+                              <span>{line.trim().substring(2)}</span>
+                            </li>
+                          );
+                        }
+                        return null;
+                      })}
+                    </ul>
+                  );
+                }
+                
+                // Handle numbered lists (lines starting with "1. ", "2. ", etc.)
+                const numberedLines = paragraph.split('\n').filter(line => /^\d+\.\s/.test(line.trim()));
+                if (numberedLines.length > 0 && /^\d+\.\s/.test(paragraph.trim())) {
+                  return (
+                    <ol key={i} className="list-none space-y-2 ml-4 sm:ml-6">
+                      {paragraph.split('\n').map((line, idx) => {
+                        const match = line.trim().match(/^(\d+)\.\s(.+)/);
+                        if (match) {
+                          return (
+                            <li key={idx} className="flex items-start gap-3">
+                              <span className="text-foreground/60 font-medium min-w-[1.5rem]">{match[1]}.</span>
+                              <span>{match[2]}</span>
+                            </li>
+                          );
+                        }
+                        return null;
+                      })}
+                    </ol>
+                  );
+                }
+                
                 // Handle bold text
                 if (paragraph.startsWith('**') && paragraph.includes(':**')) {
                   const parts = paragraph.split('**');
@@ -133,6 +175,7 @@ export function BlogPost() {
                     </p>
                   );
                 }
+                
                 // Regular paragraph
                 return <p key={i}>{paragraph}</p>;
               })}
