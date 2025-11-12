@@ -12,6 +12,7 @@ interface AddTaskDialogProps {
     start_time: string;
     end_time: string;
     color: string;
+    recurrence_rule?: string;
   }) => void;
   initialDate?: string;
   initialTime?: string;
@@ -24,6 +25,7 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, initialDate, initialT
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [color, setColor] = useState('#3b82f6');
+  const [recurrenceRule, setRecurrenceRule] = useState('');
 
   // Update date and time when initialDate or initialTime changes
   useEffect(() => {
@@ -35,9 +37,18 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, initialDate, initialT
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, description, date, start_time: startTime, end_time: endTime, color });
+    onSubmit({ 
+      title, 
+      description, 
+      date, 
+      start_time: startTime, 
+      end_time: endTime, 
+      color,
+      recurrence_rule: recurrenceRule || undefined,
+    });
     setTitle('');
     setDescription('');
+    setRecurrenceRule('');
     onClose();
   };
 
@@ -123,6 +134,26 @@ export function AddTaskDialog({ isOpen, onClose, onSubmit, initialDate, initialT
                 />
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Recurrence (optional)</label>
+            <select
+              value={recurrenceRule}
+              onChange={(e) => setRecurrenceRule(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-background"
+            >
+              <option value="">None (one-time)</option>
+              <option value="DAILY">Daily</option>
+              <option value="WEEKLY">Weekly (same day of week)</option>
+              <option value="MONTHLY">Monthly (same date)</option>
+              <option value="WEEKDAYS">Weekdays (Mon-Fri)</option>
+            </select>
+            {recurrenceRule && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Will create recurring instances for the next 12 weeks
+              </p>
+            )}
           </div>
 
           <div className="flex gap-2 justify-end pt-4">
