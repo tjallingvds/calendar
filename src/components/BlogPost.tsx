@@ -129,8 +129,8 @@ export function BlogPost() {
       <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
         {/* Page border frame */}
         <div className="page-border">
-        {/* Small corner links */}
-        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        {/* Small corner links (hidden on mobile) */}
+        <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
@@ -284,6 +284,34 @@ export function BlogPost() {
               <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
+              
+              {/* Mobile-only links (shown under copyright) */}
+              <div className="flex sm:hidden items-center justify-center gap-3 mt-3">
+                <a
+                  href="https://www.linkedin.com/in/tjallingvds"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="garamond text-xs" style={{ color: '#999' }}
+                >
+                  [linkedin]
+                </a>
+                <button
+                  onClick={() => {
+                    const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
+                    const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
+                    window.location.href = `mailto:${email}`;
+                  }}
+                  className="garamond text-xs" style={{ color: '#999' }}
+                >
+                  [email]
+                </button>
+                <Link
+                  to="/"
+                  className="garamond text-xs" style={{ color: '#999' }}
+                >
+                  [login]
+                </Link>
+              </div>
             </div>
           </article>
           </div>
