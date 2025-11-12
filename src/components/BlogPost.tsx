@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeft, ArrowUp } from 'lucide-react';
 import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote } from '@/lib/api';
 import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
@@ -154,39 +154,6 @@ export function BlogPost() {
               </h1>
             </header>
 
-            {/* Voting */}
-            <div className="flex items-center gap-4 mb-8 sm:mb-12 pb-8 border-b border-border/20">
-              <button
-                onClick={() => handleVote('upvote')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  myVote === 'upvote'
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                    : 'hover:bg-muted/50 text-muted-foreground'
-                }`}
-              >
-                <ThumbsUp className="h-5 w-5" />
-                <span className="garamond text-sm font-medium">{votes.upvotes}</span>
-              </button>
-              
-              <button
-                onClick={() => handleVote('downvote')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  myVote === 'downvote'
-                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                    : 'hover:bg-muted/50 text-muted-foreground'
-                }`}
-              >
-                <ThumbsDown className="h-5 w-5" />
-                <span className="garamond text-sm font-medium">{votes.downvotes}</span>
-              </button>
-              
-              <div className="garamond text-sm text-muted-foreground ml-2">
-                {votes.total > 0 && `+${votes.total}`}
-                {votes.total < 0 && votes.total}
-                {votes.total === 0 && '0'}
-              </div>
-            </div>
-
             {/* Content */}
             <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
                 {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
@@ -262,6 +229,21 @@ export function BlogPost() {
                 // Regular paragraph
                 return <p key={i}>{paragraph}</p>;
               })}
+            </div>
+
+            {/* Voting */}
+            <div className="flex items-center gap-3 mt-12 sm:mt-16 pt-8 border-t border-border/20">
+              <button
+                onClick={() => handleVote('upvote')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${
+                  myVote === 'upvote'
+                    ? 'bg-foreground/5 text-foreground'
+                    : 'hover:bg-foreground/5 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <ArrowUp className="h-4 w-4" />
+                <span className="garamond text-sm font-medium">{votes.upvotes}</span>
+              </button>
             </div>
           </article>
           </div>
