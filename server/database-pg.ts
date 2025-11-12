@@ -98,6 +98,20 @@ export async function initDatabase() {
       )
     `);
 
+    // Blog Posts
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS blog_posts (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        full_content TEXT,
+        date TEXT NOT NULL,
+        published INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('PostgreSQL database initialized');
   } finally {
     client.release();

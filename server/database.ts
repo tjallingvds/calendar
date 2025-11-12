@@ -96,6 +96,20 @@ export function initDatabase() {
     )
   `);
 
+  // Blog Posts
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS blog_posts (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      full_content TEXT,
+      date TEXT NOT NULL,
+      published INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log('SQLite database initialized at:', dbPath);
 }
 
