@@ -248,18 +248,21 @@ export function BlogPost() {
             </div>
 
             {/* Voting */}
-            <div className="flex items-center gap-3 mt-12 sm:mt-16 pt-8 border-t border-border/20">
-              <button
-                onClick={() => handleVote('upvote')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${
-                  myVote === 'upvote'
-                    ? 'bg-foreground/5 text-foreground'
-                    : 'hover:bg-foreground/5 text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <ArrowUp className="h-4 w-4" />
-                <span className="garamond text-sm font-medium">{votes.upvotes}</span>
-              </button>
+            <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
+              <div className="flex items-center justify-between">
+                <p className="garamond text-sm text-muted-foreground">Was this helpful?</p>
+                <button
+                  onClick={() => handleVote('upvote')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                    myVote === 'upvote'
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'border-border/40 hover:border-foreground/40 text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  <span className="garamond text-sm font-medium">{votes.upvotes}</span>
+                </button>
+              </div>
             </div>
 
             {/* Footer */}

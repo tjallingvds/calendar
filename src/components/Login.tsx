@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getBlogPosts } from '@/lib/api';
-import type { BlogPost } from '@/lib/api';
+import { ArrowUp } from 'lucide-react';
+import { getBlogPosts, getBlogPostVotes } from '@/lib/api';
+import type { BlogPost, BlogPostVotes } from '@/lib/api';
 
 interface LoginProps {
   onLogin: (password: string) => void;
@@ -13,13 +14,29 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(externalError || '');
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [postVotes, setPostVotes] = useState<Record<string, BlogPostVotes>>({});
 
-  // Load blog posts
+  // Load blog posts and their votes
   useEffect(() => {
     const loadPosts = async () => {
       try {
         const posts = await getBlogPosts();
         setBlogPosts(posts);
+        
+        // Load votes for each post
+        const votesMap: Record<string, BlogPostVotes> = {};
+        await Promise.all(
+          posts.map(async (post) => {
+            try {
+              const votes = await getBlogPostVotes(post.id);
+              votesMap[post.id] = votes;
+            } catch (error) {
+              console.error(`Failed to load votes for post ${post.id}:`, error);
+              votesMap[post.id] = { upvotes: 0, downvotes: 0, total: 0 };
+            }
+          })
+        );
+        setPostVotes(votesMap);
       } catch (error) {
         console.error('Failed to load blog posts:', error);
       }
@@ -138,6 +155,12 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                         })}
                       </time>
                       <div className="flex-1 h-px bg-border/20"></div>
+                      {postVotes[note.id] && postVotes[note.id].upvotes > 0 && (
+                        <div className="flex items-center gap-1 text-muted-foreground/60">
+                          <ArrowUp className="h-3 w-3" />
+                          <span className="garamond text-xs">{postVotes[note.id].upvotes}</span>
+                        </div>
+                      )}
                     </div>
                     <h2 className="garamond text-xl sm:text-2xl font-medium mb-2 sm:mb-3 tracking-tight group-hover:text-foreground/80 transition-colors">
                       {note.title}
