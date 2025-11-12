@@ -377,3 +377,36 @@ export async function deleteBlogPost(id: string): Promise<void> {
   return handleResponse(res);
 }
 
+// Blog Post Votes
+export interface BlogPostVotes {
+  upvotes: number;
+  downvotes: number;
+  total: number;
+}
+
+export async function getBlogPostVotes(postId: string): Promise<BlogPostVotes> {
+  const res = await fetch(`${API_BASE}/blog-posts/${postId}/votes`);
+  return handleResponse(res);
+}
+
+export async function getMyVote(postId: string): Promise<{ vote: 'upvote' | 'downvote' | null }> {
+  const res = await fetch(`${API_BASE}/blog-posts/${postId}/my-vote`);
+  return handleResponse(res);
+}
+
+export async function submitVote(postId: string, voteType: 'upvote' | 'downvote'): Promise<void> {
+  const res = await fetch(`${API_BASE}/blog-posts/${postId}/vote`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vote_type: voteType }),
+  });
+  return handleResponse(res);
+}
+
+export async function removeVote(postId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/blog-posts/${postId}/vote`, {
+    method: 'DELETE',
+  });
+  return handleResponse(res);
+}
+

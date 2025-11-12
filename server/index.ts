@@ -308,6 +308,80 @@ app.delete('/api/blog-posts/:id', authenticateToken, async (req, res) => {
   res.json({ success: true });
 });
 
+// ===== BLOG POST VOTES ===== (Public)
+
+// Get vote counts for a post
+app.get('/api/blog-posts/:id/votes', async (req, res) => {
+  const upvotes = await get(
+    'SELECT COUNT(*) as count FROM blog_post_votes WHERE post_id = ? AND vote_type = ?',
+    [req.params.id, 'upvote']
+  );
+  const downvotes = await get(
+    'SELECT COUNT(*) as count FROM blog_post_votes WHERE post_id = ? AND vote_type = ?',
+    [req.params.id, 'downvote']
+  );
+  
+  res.json({ 
+    upvotes: upvotes?.count || 0, 
+    downvotes: downvotes?.count || 0,
+    total: (upvotes?.count || 0) - (downvotes?.count || 0)
+  });
+});
+
+// Check if IP has voted
+app.get('/api/blog-posts/:id/my-vote', async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const vote = await get(
+    'SELECT vote_type FROM blog_post_votes WHERE post_id = ? AND ip_address = ?',
+    [req.params.id, ip]
+  );
+  res.json({ vote: vote?.vote_type || null });
+});
+
+// Submit or update vote
+app.post('/api/blog-posts/:id/vote', async (req, res) => {
+  const { vote_type } = req.body; // 'upvote' or 'downvote'
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  
+  if (!vote_type || !['upvote', 'downvote'].includes(vote_type)) {
+    return res.status(400).json({ error: 'Invalid vote type' });
+  }
+
+  try {
+    // Try to insert or update vote
+    const existing = await get(
+      'SELECT id FROM blog_post_votes WHERE post_id = ? AND ip_address = ?',
+      [req.params.id, ip]
+    );
+
+    if (existing) {
+      // Update existing vote
+      await run(
+        'UPDATE blog_post_votes SET vote_type = ?, created_at = CURRENT_TIMESTAMP WHERE post_id = ? AND ip_address = ?',
+        [vote_type, req.params.id, ip]
+      );
+    } else {
+      // Insert new vote
+      await run(
+        'INSERT INTO blog_post_votes (post_id, ip_address, vote_type) VALUES (?, ?, ?)',
+        [req.params.id, ip, vote_type]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Vote error:', error);
+    res.status(500).json({ error: 'Failed to record vote' });
+  }
+});
+
+// Remove vote
+app.delete('/api/blog-posts/:id/vote', async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  await run('DELETE FROM blog_post_votes WHERE post_id = ? AND ip_address = ?', [req.params.id, ip]);
+  res.json({ success: true });
+});
+
 // ===== TEMPLATES ===== (Protected)
 
 app.get('/api/templates', authenticateToken, async (req, res) => {
