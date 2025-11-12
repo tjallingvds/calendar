@@ -181,14 +181,14 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
           >
             [email]
           </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
-              className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+              className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
             >
               [login]
             </button>
@@ -295,14 +295,14 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                     const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
                     window.location.href = `mailto:${email}`;
                   }}
-                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                 >
                   [email]
                 </button>
                 {!showPasswordInput ? (
                   <button
                     onClick={() => setShowPasswordInput(true)}
-                    className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+                    className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                   >
                     [login]
                   </button>

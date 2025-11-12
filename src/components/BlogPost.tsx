@@ -234,12 +234,12 @@ export function BlogPost() {
         }
         .back-to-top {
           position: fixed;
-          bottom: 2rem;
-          right: 2rem;
+          bottom: 3rem;
+          right: 3rem;
           background: white;
           border: 1px solid #e5e5e5;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 2px;
           display: flex;
           align-items: center;
@@ -247,17 +247,17 @@ export function BlogPost() {
           cursor: pointer;
           opacity: 0;
           transition: all 0.3s ease;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-          color: #999;
-          z-index: 100;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+          color: #bbb;
+          z-index: 50;
         }
         .back-to-top.visible {
           opacity: 1;
         }
         .back-to-top:hover {
-          background: rgba(0,0,0,0.02);
-          color: #666;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+          background: rgba(0,0,0,0.015);
+          color: #888;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         @media (max-width: 640px) {
           .page-border {
@@ -269,8 +269,8 @@ export function BlogPost() {
             margin-right: 0.12em;
           }
           .back-to-top {
-            bottom: 1rem;
-            right: 1rem;
+            bottom: 2rem;
+            right: 2rem;
           }
         }
       `}</style>
@@ -333,14 +333,14 @@ export function BlogPost() {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
           >
             [email]
           </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
-              className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+              className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
             >
               [login]
             </button>
@@ -609,14 +609,14 @@ export function BlogPost() {
                     const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
                     window.location.href = `mailto:${email}`;
                   }}
-                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                 >
                   [email]
                 </button>
                 {!showPasswordInput ? (
                   <button
                     onClick={() => setShowPasswordInput(true)}
-                    className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
+                    className="garamond text-xs hover:opacity-70 transition-opacity cursor-pointer" style={{ color: '#999' }}
                   >
                     [login]
                   </button>
@@ -662,7 +662,7 @@ export function BlogPost() {
           className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
           aria-label="Back to top"
         >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 12L8 4M8 4L4 8M8 4L12 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
