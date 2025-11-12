@@ -118,10 +118,34 @@ export function BlogPost() {
           min-height: calc(100vh - 4rem);
           position: relative;
         }
+        .small-caps {
+          font-variant: small-caps;
+          letter-spacing: 0.05em;
+          font-size: 0.95em;
+        }
+        .dropcap::first-letter {
+          float: left;
+          font-size: 3.5em;
+          line-height: 0.85;
+          margin-right: 0.1em;
+          margin-top: 0.05em;
+          font-weight: 500;
+          color: #2a2a2a;
+        }
+        .blog-blockquote {
+          border-left: 2px solid #d0d0d0;
+          padding-left: 1.5rem;
+          margin-left: 0;
+          font-style: italic;
+          color: #4a4a4a;
+        }
         @media (max-width: 640px) {
           .page-border {
             margin: 1rem;
             min-height: calc(100vh - 2rem);
+          }
+          .dropcap::first-letter {
+            font-size: 2.5em;
           }
         }
       `}</style>
@@ -172,7 +196,7 @@ export function BlogPost() {
           <article>
             {/* Header */}
             <header className="mb-8 sm:mb-12">
-              <time className="garamond text-xs sm:text-sm text-muted-foreground/60 block mb-2 sm:mb-3">
+              <time className="small-caps garamond text-xs sm:text-sm text-muted-foreground/60 block mb-2 sm:mb-3">
                 {new Date(post.date).toLocaleDateString('en-US', { 
                   month: 'long', 
                   day: 'numeric',
@@ -187,6 +211,17 @@ export function BlogPost() {
             {/* Content */}
             <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
                 {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
+                  // Handle blockquotes (lines starting with "> ")
+                  if (paragraph.trim().startsWith('> ')) {
+                    return (
+                      <blockquote key={i} className="blog-blockquote">
+                        {paragraph.split('\n').map((line, idx) => (
+                          <p key={idx}>{line.replace(/^>\s*/, '')}</p>
+                        ))}
+                      </blockquote>
+                    );
+                  }
+                  
                   // Handle markdown-style headers (with or without space after #)
                   if (paragraph.startsWith('### ') || paragraph.startsWith('###')) {
                     return (
@@ -256,7 +291,10 @@ export function BlogPost() {
                   );
                 }
                 
-                // Regular paragraph
+                // Regular paragraph (with dropcap on first paragraph)
+                if (i === 0) {
+                  return <p key={i} className="dropcap">{paragraph}</p>;
+                }
                 return <p key={i}>{paragraph}</p>;
               })}
             </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
-import { getBlogPosts, getBlogPostVotes } from '@/lib/api';
+import { getBlogPosts, getBlogPostVotes, getBlogThemes } from '@/lib/api';
 import type { BlogPost, BlogPostVotes } from '@/lib/api';
 
 interface LoginProps {
@@ -15,12 +15,15 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
   const [error, setError] = useState(externalError || '');
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [postVotes, setPostVotes] = useState<Record<string, BlogPostVotes>>({});
+  const [themes, setThemes] = useState<string[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
 
   // Load blog posts and their votes
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const posts = await getBlogPosts();
+        const posts = await getBlogPosts(selectedTheme || undefined);
         setBlogPosts(posts);
         
         // Load votes for each post
@@ -42,6 +45,19 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
       }
     };
     loadPosts();
+  }, [selectedTheme]);
+
+  // Load themes
+  useEffect(() => {
+    const loadThemes = async () => {
+      try {
+        const themesData = await getBlogThemes();
+        setThemes(themesData);
+      } catch (error) {
+        console.error('Failed to load themes:', error);
+      }
+    };
+    loadThemes();
   }, []);
 
   // Update error when external error changes
@@ -73,6 +89,25 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
           min-height: calc(100vh - 4rem);
           position: relative;
         }
+        .title-rule {
+          width: 60px;
+          height: 1px;
+          background: #d0d0d0;
+          margin-top: 0.75rem;
+        }
+        .small-caps {
+          font-variant: small-caps;
+          letter-spacing: 0.05em;
+          font-size: 0.95em;
+        }
+        .blog-card {
+          transition: all 0.3s ease;
+          opacity: 1;
+        }
+        .blog-card:hover {
+          opacity: 0.85;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
         @media (max-width: 640px) {
           .page-border {
             margin: 1rem;
@@ -84,6 +119,49 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
       <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
         {/* Page border frame */}
         <div className="page-border">
+        {/* Themes dropdown - top left */}
+        <div className="absolute top-6 left-6 z-10 flex items-center">
+          <div className="relative">
+            <button
+              onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+              className="garamond text-xs hover:opacity-70 transition-opacity"
+              style={{ color: '#999' }}
+            >
+              [{selectedTheme || 'themes'}]
+            </button>
+            {showThemeDropdown && themes.length > 0 && (
+              <div 
+                className="absolute top-full left-0 mt-1 bg-white border border-border/20 rounded shadow-md py-1 min-w-[120px]"
+                style={{ zIndex: 50 }}
+              >
+                <button
+                  onClick={() => {
+                    setSelectedTheme('');
+                    setShowThemeDropdown(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${!selectedTheme ? 'font-medium' : ''}`}
+                  style={{ color: '#2a2a2a' }}
+                >
+                  All themes
+                </button>
+                {themes.map((theme) => (
+                  <button
+                    key={theme}
+                    onClick={() => {
+                      setSelectedTheme(theme);
+                      setShowThemeDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${selectedTheme === theme ? 'font-medium' : ''}`}
+                    style={{ color: '#2a2a2a' }}
+                  >
+                    {theme}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Small corner links - inside the border (hidden on mobile) */}
         <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-3">
           <a
@@ -151,11 +229,12 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               <h1 className="garamond text-2xl sm:text-3xl font-medium mb-2 tracking-tight">
                 Tjalling van der Schaar
               </h1>
-              <p className="garamond text-base sm:text-lg" style={{ color: '#666' }}>
-                Notes on living
+              <div className="title-rule"></div>
+              <p className="garamond text-base sm:text-lg mt-4" style={{ color: '#666' }}>
+                Exploration of random thoughts, ideas, and experiences.
               </p>
               <p className="garamond text-sm mt-2" style={{ color: '#999' }}>
-                London, UK
+                Currently reading: <span style={{ fontStyle: 'italic' }}>Outline</span> by Rachel Cusk
               </p>
             </div>
 
@@ -163,9 +242,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             <div className="space-y-10 sm:space-y-14">
               {blogPosts.map((note) => (
                 <Link to={`/blog/${note.id}`} key={note.id} className="block">
-                  <article className="group cursor-pointer p-4 sm:p-5 -mx-4 sm:-mx-5 transition-all hover:shadow-md" style={{ boxShadow: '0 0 0 0 rgba(0,0,0,0)', transition: 'box-shadow 0.2s ease' }}>
+                  <article className="blog-card cursor-pointer p-4 sm:p-5 -mx-4 sm:-mx-5">
                     <div className="flex items-baseline gap-2 sm:gap-3 mb-2">
-                      <time className="text-xs sm:text-sm whitespace-nowrap" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
+                      <time className="small-caps text-xs sm:text-sm whitespace-nowrap" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                         {new Date(note.date).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric',

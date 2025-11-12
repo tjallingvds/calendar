@@ -106,6 +106,7 @@ export async function initDatabase() {
         content TEXT NOT NULL,
         full_content TEXT,
         date TEXT NOT NULL,
+        theme TEXT,
         published INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
