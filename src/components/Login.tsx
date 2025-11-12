@@ -80,6 +80,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap');
+        html {
+          scroll-behavior: smooth;
+        }
         .garamond {
           font-family: 'EB Garamond', serif;
         }
@@ -168,7 +171,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
             rel="noopener noreferrer"
-            className="garamond text-xs" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
           >
             [linkedin]
           </a>
@@ -178,14 +181,14 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs" style={{ color: '#999' }}
+            className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
           >
             [email]
           </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
-              className="garamond text-xs" style={{ color: '#999' }}
+              className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
             >
               [login]
             </button>
@@ -282,7 +285,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                   href="https://www.linkedin.com/in/tjallingvds"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="garamond text-xs" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                 >
                   [linkedin]
                 </a>
@@ -292,14 +295,14 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                     const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
                     window.location.href = `mailto:${email}`;
                   }}
-                  className="garamond text-xs" style={{ color: '#999' }}
+                  className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                 >
                   [email]
                 </button>
                 {!showPasswordInput ? (
                   <button
                     onClick={() => setShowPasswordInput(true)}
-                    className="garamond text-xs" style={{ color: '#999' }}
+                    className="garamond text-xs hover:opacity-70 transition-opacity" style={{ color: '#999' }}
                   >
                     [login]
                   </button>
