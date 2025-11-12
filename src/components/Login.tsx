@@ -84,8 +84,8 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
       <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
         {/* Page border frame */}
         <div className="page-border">
-        {/* Small corner links - inside the border */}
-        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        {/* Small corner links - inside the border (hidden on mobile) */}
+        <div className="absolute top-6 right-6 z-10 hidden sm:flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
@@ -193,6 +193,64 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
+              
+              {/* Mobile-only links (shown under copyright) */}
+              <div className="flex sm:hidden items-center justify-center gap-3 mt-3">
+                <a
+                  href="https://www.linkedin.com/in/tjallingvds"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="garamond text-xs" style={{ color: '#999' }}
+                >
+                  [linkedin]
+                </a>
+                <button
+                  onClick={() => {
+                    const parts = ['tjalling', 'vdschaar', 'gmail', 'com'];
+                    const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
+                    window.location.href = `mailto:${email}`;
+                  }}
+                  className="garamond text-xs" style={{ color: '#999' }}
+                >
+                  [email]
+                </button>
+                {!showPasswordInput ? (
+                  <button
+                    onClick={() => setShowPasswordInput(true)}
+                    className="garamond text-xs" style={{ color: '#999' }}
+                  >
+                    [login]
+                  </button>
+                ) : (
+                  <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError('');
+                      }}
+                      placeholder="password"
+                      className="px-2 py-0.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-xs w-28"
+                      autoFocus
+                      onBlur={() => {
+                        if (!password) {
+                          setTimeout(() => setShowPasswordInput(false), 200);
+                        }
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="garamond text-xs" style={{ color: '#999' }}
+                    >
+                      →
+                    </button>
+                  </form>
+                )}
+              </div>
+              {error && (
+                <p className="garamond text-xs text-red-500 mt-2 sm:hidden text-center">{error}</p>
+              )}
             </div>
           </div>
         </div>
