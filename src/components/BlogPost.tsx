@@ -86,7 +86,7 @@ export function BlogPost() {
           </a>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
+            <div className="max-w-2xl mx-auto px-4 sm:px-8 py-12 sm:py-16" style={{ maxWidth: '42rem' }}>
           {/* Back button */}
           <Link 
             to="/" 
@@ -114,15 +114,23 @@ export function BlogPost() {
 
             {/* Content */}
             <div className="garamond text-base sm:text-lg leading-relaxed text-foreground/90 space-y-4 sm:space-y-6">
-              {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
-                // Handle markdown-style headers
-                if (paragraph.startsWith('## ')) {
-                  return (
-                    <h2 key={i} className="text-xl sm:text-2xl font-medium mt-8 sm:mt-12 mb-4 sm:mb-6 tracking-tight">
-                      {paragraph.replace('## ', '')}
-                    </h2>
-                  );
-                }
+                {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
+                  // Handle markdown-style headers
+                  if (paragraph.startsWith('### ')) {
+                    return (
+                      <h3 key={i} className="text-lg sm:text-xl font-medium mt-6 sm:mt-8 mb-3 sm:mb-4 tracking-tight">
+                        {paragraph.replace('### ', '')}
+                      </h3>
+                    );
+                  }
+                  
+                  if (paragraph.startsWith('## ')) {
+                    return (
+                      <h2 key={i} className="text-xl sm:text-2xl font-medium mt-8 sm:mt-12 mb-4 sm:mb-6 tracking-tight">
+                        {paragraph.replace('## ', '')}
+                      </h2>
+                    );
+                  }
                 
                 // Handle bullet lists (lines starting with "- ")
                 const bulletLines = paragraph.split('\n').filter(line => line.trim().startsWith('- '));

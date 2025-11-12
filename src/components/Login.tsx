@@ -101,9 +101,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
           )}
         </div>
 
-        {/* Content */}
-        <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
-          <div className="max-w-2xl mx-auto w-full">
+            {/* Content */}
+            <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
+              <div className="max-w-2xl mx-auto w-full" style={{ maxWidth: '42rem' }}>
             {/* Header */}
             <div className="mb-12 sm:mb-20">
               <h1 className="garamond text-2xl sm:text-3xl font-medium mb-2 tracking-tight">
