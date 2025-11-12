@@ -250,17 +250,17 @@ export function BlogPost() {
             {/* Voting */}
             <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
               <div className="flex items-center justify-between">
-                <p className="garamond text-sm text-muted-foreground">Was this helpful?</p>
+                <p className="garamond text-sm text-muted-foreground/70">Thoughts?</p>
                 <button
                   onClick={() => handleVote('upvote')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                     myVote === 'upvote'
-                      ? 'bg-foreground text-background border-foreground'
-                      : 'border-border/40 hover:border-foreground/40 text-muted-foreground hover:text-foreground'
+                      ? 'bg-foreground/10 text-foreground'
+                      : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
                   }`}
                 >
-                  <ArrowUp className="h-4 w-4" />
-                  <span className="garamond text-sm font-medium">{votes.upvotes}</span>
+                  <ArrowUp className="h-3.5 w-3.5" />
+                  <span className="garamond text-sm">{votes.upvotes}</span>
                 </button>
               </div>
             </div>
