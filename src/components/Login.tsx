@@ -67,16 +67,30 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
         .garamond {
           font-family: 'EB Garamond', serif;
         }
+        .page-border {
+          border: 1px solid #f0f0f0;
+          margin: 2rem;
+          min-height: calc(100vh - 4rem);
+          position: relative;
+        }
+        @media (max-width: 640px) {
+          .page-border {
+            margin: 1rem;
+            min-height: calc(100vh - 2rem);
+          }
+        }
       `}</style>
 
-      <div className="min-h-screen bg-background relative">
-        {/* Small corner links */}
-        <div className="fixed top-6 right-6 z-10 flex items-center gap-3">
+      <div className="min-h-screen bg-white relative" style={{ color: '#2a2a2a' }}>
+        {/* Page border frame */}
+        <div className="page-border">
+        {/* Small corner links - inside the border */}
+        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
           <a
             href="https://www.linkedin.com/in/tjallingvds"
             target="_blank"
             rel="noopener noreferrer"
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="garamond text-xs" style={{ color: '#999' }}
           >
             [linkedin]
           </a>
@@ -86,14 +100,14 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               const email = `${parts[0]}${parts[1]}@${parts[2]}.${parts[3]}`;
               window.location.href = `mailto:${email}`;
             }}
-            className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="garamond text-xs" style={{ color: '#999' }}
           >
             [email]
           </button>
           {!showPasswordInput ? (
             <button
               onClick={() => setShowPasswordInput(true)}
-              className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+              className="garamond text-xs" style={{ color: '#999' }}
             >
               [login]
             </button>
@@ -117,7 +131,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               />
               <button
                 type="submit"
-                className="garamond text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+                className="garamond text-xs" style={{ color: '#999' }}
               >
                 →
               </button>
@@ -127,45 +141,46 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             <p className="garamond text-xs text-red-500 absolute top-full right-0 mt-1">{error}</p>
           )}
         </div>
+        {/* Duplicate removed - links are now outside */}
 
             {/* Content */}
-            <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16">
+            <div className="px-4 sm:px-8 py-12 sm:py-16">
               <div className="max-w-2xl mx-auto w-full" style={{ maxWidth: '42rem' }}>
             {/* Header */}
-            <div className="mb-12 sm:mb-20">
-              <h1 className="garamond text-2xl sm:text-3xl font-medium mb-2 tracking-tight">
+            <div className="mb-20 sm:mb-28 text-center">
+              <h1 className="garamond text-4xl sm:text-5xl font-medium mb-5 tracking-tight" style={{ letterSpacing: '0.01em' }}>
                 Tjalling van der Schaar
               </h1>
-              <p className="garamond text-sm sm:text-base text-muted-foreground/60">
-                On intentional building, learning, and growing.  
+              <p className="garamond text-lg" style={{ color: '#666', fontStyle: 'italic' }}>
+                Notes on living
               </p>
             </div>
 
             {/* Notes Feed */}
-            <div className="space-y-8 sm:space-y-12">
+            <div className="space-y-10 sm:space-y-14">
               {blogPosts.map((note) => (
                 <Link to={`/blog/${note.id}`} key={note.id} className="block">
-                  <article className="group cursor-pointer p-3 sm:p-4 -mx-3 sm:-mx-4 rounded-lg hover:bg-muted/30 transition-all">
+                  <article className="group cursor-pointer p-4 sm:p-5 -mx-4 sm:-mx-5 transition-all hover:shadow-md" style={{ boxShadow: '0 0 0 0 rgba(0,0,0,0)', transition: 'box-shadow 0.2s ease' }}>
                     <div className="flex items-baseline gap-2 sm:gap-3 mb-2">
-                      <time className="garamond text-xs sm:text-sm text-muted-foreground/60 whitespace-nowrap">
+                      <time className="text-xs sm:text-sm whitespace-nowrap" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                         {new Date(note.date).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric',
                           year: 'numeric'
                         })}
                       </time>
-                      <div className="flex-1 h-px bg-border/20"></div>
+                      <div className="flex-1 h-px" style={{ background: '#e5e5e5' }}></div>
                       {postVotes[note.id] && postVotes[note.id].upvotes > 0 && (
-                        <div className="flex items-center gap-1 text-muted-foreground/60">
+                        <div className="flex items-center gap-1" style={{ color: '#999' }}>
                           <ArrowUp className="h-3 w-3" />
-                          <span className="garamond text-xs">{postVotes[note.id].upvotes}</span>
+                          <span className="text-xs" style={{ fontFamily: 'Georgia, serif' }}>{postVotes[note.id].upvotes}</span>
                         </div>
                       )}
                     </div>
-                    <h2 className="garamond text-xl sm:text-2xl font-medium mb-2 sm:mb-3 tracking-tight group-hover:text-foreground/80 transition-colors">
+                    <h2 className="garamond text-xl sm:text-2xl font-medium mb-2 sm:mb-3 tracking-tight" style={{ color: '#2a2a2a' }}>
                       {note.title}
                     </h2>
-                    <p className="garamond text-sm sm:text-base leading-relaxed text-foreground/90 group-hover:text-foreground transition-colors">
+                    <p className="garamond text-sm sm:text-base leading-relaxed" style={{ color: '#4a4a4a', lineHeight: '1.7' }}>
                       {note.content}
                     </p>
                   </article>
@@ -174,12 +189,13 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             </div>
 
             {/* Footer */}
-            <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 border-t border-border/20 text-center">
-              <p className="garamond text-xs text-muted-foreground/60">
+            <div className="mt-16 sm:mt-24 pt-8 text-center" style={{ borderTop: '1px solid #e5e5e5' }}>
+              <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>
