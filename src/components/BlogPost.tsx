@@ -580,20 +580,19 @@ export function BlogPost() {
             </div>
 
             {/* Voting */}
-            <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
-              <div className="flex items-center justify-start">
-                <button
-                  onClick={() => handleVote('upvote')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all ${
-                    myVote === 'upvote'
-                      ? 'bg-foreground/8 text-foreground border border-foreground/10'
-                      : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
-                  }`}
-                >
-                  <ArrowUp className={`h-3.5 w-3.5 ${myVote === 'upvote' ? 'stroke-[2]' : ''}`} />
-                  <span className="garamond text-sm">{votes.upvotes}</span>
-                </button>
-              </div>
+            <div className="mt-12 sm:mt-16 flex items-center justify-end">
+              <button
+                onClick={() => handleVote('upvote')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-sm transition-all ${
+                  myVote === 'upvote'
+                    ? 'bg-foreground/8 text-foreground border border-foreground/10'
+                    : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
+                }`}
+              >
+                <span className="garamond text-sm">Upvote</span>
+                <ArrowUp className={`h-4 w-4 ${myVote === 'upvote' ? 'stroke-[2]' : ''}`} />
+                <span className="garamond text-sm font-medium">{votes.upvotes}</span>
+              </button>
             </div>
 
             {/* Email subscription */}
