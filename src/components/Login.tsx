@@ -286,6 +286,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                     <p className="garamond text-sm sm:text-base leading-relaxed" style={{ color: '#4a4a4a', lineHeight: '1.7' }}>
                       {note.content}
                     </p>
+                    <p className="garamond text-xs mt-3" style={{ color: '#999' }}>
+                      Continue reading →
+                    </p>
                   </article>
                 </Link>
               ))}
