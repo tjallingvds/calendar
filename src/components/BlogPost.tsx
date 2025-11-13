@@ -579,8 +579,25 @@ export function BlogPost() {
               })}
             </div>
 
-            {/* Email subscription */}
+            {/* Voting */}
             <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
+              <div className="flex items-center justify-start">
+                <button
+                  onClick={() => handleVote('upvote')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all ${
+                    myVote === 'upvote'
+                      ? 'bg-foreground/8 text-foreground border border-foreground/10'
+                      : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
+                  }`}
+                >
+                  <ArrowUp className={`h-3.5 w-3.5 ${myVote === 'upvote' ? 'stroke-[2]' : ''}`} />
+                  <span className="garamond text-sm">{votes.upvotes}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Email subscription */}
+            <div className="mt-8 sm:mt-12 pt-8 border-t border-border/20 text-center">
               <p className="garamond text-sm mb-4" style={{ color: '#666' }}>
                 Get notified when I publish new essays
               </p>
@@ -603,7 +620,7 @@ export function BlogPost() {
                     setTimeout(() => setSubscribeMessage(''), 3000);
                   }
                 }}
-                className="flex items-center gap-2 max-w-md"
+                className="flex items-center justify-center gap-2 max-w-md mx-auto"
               >
                 <input
                   type="email"
@@ -628,25 +645,8 @@ export function BlogPost() {
               )}
             </div>
 
-            {/* Voting */}
-            <div className="mt-8 pt-8 border-t border-border/20">
-              <div className="flex items-center justify-end">
-                <button
-                  onClick={() => handleVote('upvote')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-all ${
-                    myVote === 'upvote'
-                      ? 'bg-foreground/8 text-foreground border border-foreground/10'
-                      : 'hover:bg-foreground/5 text-muted-foreground/60 hover:text-foreground/80'
-                  }`}
-                >
-                  <ArrowUp className={`h-3.5 w-3.5 ${myVote === 'upvote' ? 'stroke-[2]' : ''}`} />
-                  <span className="garamond text-sm">{votes.upvotes}</span>
-                </button>
-              </div>
-            </div>
-
             {/* Footer */}
-            <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 text-center" style={{ borderTop: '1px solid #e5e5e5' }}>
+            <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 text-center" style={{ borderTop: '1px solid #e5e5e5' }}>
               <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>
