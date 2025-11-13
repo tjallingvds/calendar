@@ -239,6 +239,24 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               <p className="garamond text-sm mt-2" style={{ color: '#999' }}>
                 Currently reading: <span style={{ fontStyle: 'italic' }}>Outline</span> by Rachel Cusk
               </p>
+              
+              {/* Active topic filter indicator */}
+              {selectedTheme && (
+                <div className="mt-4 pt-4" style={{ borderTop: '1px solid #e5e5e5' }}>
+                  <p className="garamond text-sm" style={{ color: '#666' }}>
+                    Showing essays on{' '}
+                    <span style={{ color: '#2a2a2a', fontWeight: 500 }}>{selectedTheme}</span>
+                    {' '}
+                    <button
+                      onClick={() => setSelectedTheme('')}
+                      className="garamond text-xs hover:opacity-70 transition-opacity"
+                      style={{ color: '#999' }}
+                    >
+                      [view all]
+                    </button>
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Notes Feed */}
