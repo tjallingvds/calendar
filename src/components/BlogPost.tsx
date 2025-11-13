@@ -285,7 +285,7 @@ export function BlogPost() {
               className="garamond text-xs hover:opacity-70 transition-opacity"
               style={{ color: '#999' }}
             >
-              [{post?.theme || 'themes'}]
+              [topics]
             </button>
             {showThemeDropdown && themes.length > 0 && (
               <div 
@@ -602,7 +602,7 @@ export function BlogPost() {
                       className="garamond text-xs hover:opacity-70 transition-opacity"
                       style={{ color: '#999' }}
                     >
-                      [{post?.theme || 'themes'}]
+                      [topics]
                     </button>
                     {showThemeDropdown && themes.length > 0 && (
                       <div 
@@ -615,7 +615,7 @@ export function BlogPost() {
                           className="block w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10"
                           style={{ color: '#2a2a2a' }}
                         >
-                          All themes
+                          All topics
                         </Link>
                         {themes.map((theme) => (
                           <Link
