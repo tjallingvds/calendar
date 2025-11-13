@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowUp } from 'lucide-react';
-import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login, getBlogThemes } from '@/lib/api';
+import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login, getBlogThemes, subscribeToNewsletter } from '@/lib/api';
 import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
 export function BlogPost() {
@@ -16,6 +16,8 @@ export function BlogPost() {
   const [loginError, setLoginError] = useState('');
   const [themes, setThemes] = useState<string[]>([]);
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeMessage, setSubscribeMessage] = useState('');
 
   useEffect(() => {
     const loadPost = async () => {
@@ -577,8 +579,57 @@ export function BlogPost() {
               })}
             </div>
 
-            {/* Voting */}
+            {/* Email subscription */}
             <div className="mt-12 sm:mt-16 pt-8 border-t border-border/20">
+              <p className="garamond text-sm mb-4" style={{ color: '#666' }}>
+                Get notified when I publish new essays
+              </p>
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!subscribeEmail) return;
+                  
+                  try {
+                    await subscribeToNewsletter(subscribeEmail);
+                    setSubscribeMessage('Thank you for subscribing!');
+                    setSubscribeEmail('');
+                    setTimeout(() => setSubscribeMessage(''), 3000);
+                  } catch (error: any) {
+                    if (error.message?.includes('already subscribed')) {
+                      setSubscribeMessage('Email already subscribed');
+                    } else {
+                      setSubscribeMessage('Failed to subscribe. Please try again.');
+                    }
+                    setTimeout(() => setSubscribeMessage(''), 3000);
+                  }
+                }}
+                className="flex items-center gap-2 max-w-md"
+              >
+                <input
+                  type="email"
+                  value={subscribeEmail}
+                  onChange={(e) => setSubscribeEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="px-3 py-1.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-sm flex-1"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 garamond text-sm hover:opacity-70 transition-opacity"
+                  style={{ color: '#2a2a2a', border: '1px solid #e5e5e5' }}
+                >
+                  Subscribe
+                </button>
+              </form>
+              {subscribeMessage && (
+                <p className="garamond text-xs mt-2" style={{ color: subscribeMessage.includes('Thank you') ? '#666' : '#ef4444' }}>
+                  {subscribeMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Voting */}
+            <div className="mt-8 pt-8 border-t border-border/20">
               <div className="flex items-center justify-end">
                 <button
                   onClick={() => handleVote('upvote')}
