@@ -417,3 +417,34 @@ export async function removeVote(postId: string): Promise<void> {
   return handleResponse(res);
 }
 
+// Email Subscribers
+export async function subscribeToNewsletter(email: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/subscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  return handleResponse(res);
+}
+
+export interface EmailSubscriber {
+  id: number;
+  email: string;
+  created_at: string;
+}
+
+export async function getSubscribers(): Promise<EmailSubscriber[]> {
+  const res = await fetch(`${API_BASE}/subscribers`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function deleteSubscriber(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/subscribers/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
+

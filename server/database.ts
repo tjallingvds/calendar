@@ -124,6 +124,15 @@ export function initDatabase() {
     )
   `);
 
+  // Email Subscribers
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log('SQLite database initialized at:', dbPath);
 }
 
