@@ -107,12 +107,16 @@ function App() {
   };
 
   const handleDeleteEvent = async () => {
-    if (selectedEvent && confirm('Are you sure you want to delete this event?')) {
-      await deleteEvent(selectedEvent.id);
-      await loadWeekData();
-      setActiveDialog(null);
-      setSelectedEvent(undefined);
-    }
+    if (!selectedEvent) return;
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    
+    const eventId = selectedEvent.id;
+    setEvents(events.filter(e => e.id !== eventId));
+    setActiveDialog(null);
+    setSelectedEvent(undefined);
+    
+    await deleteEvent(eventId);
+    await loadWeekData();
   };
 
   const handleAddTask = async (taskData: any) => {

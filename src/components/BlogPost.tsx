@@ -401,6 +401,14 @@ export function BlogPost() {
                 <span className="garamond">
                   {calculateReadingTime(post.full_content || post.content)} min read
                 </span>
+                {post.theme && (
+                  <>
+                    <span style={{ color: '#d0d0d0' }}>•</span>
+                    <span className="garamond" style={{ color: '#999' }}>
+                      {post.theme}
+                    </span>
+                  </>
+                )}
               </div>
               <h1 className="garamond text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
                 {post.title}
