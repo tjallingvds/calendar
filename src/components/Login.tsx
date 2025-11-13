@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
-import { getBlogPosts, getBlogPostVotes, getBlogThemes } from '@/lib/api';
+import { getBlogPosts, getBlogPostVotes, getBlogThemes, subscribeToNewsletter } from '@/lib/api';
 import type { BlogPost, BlogPostVotes } from '@/lib/api';
 
 interface LoginProps {
@@ -18,6 +18,8 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
   const [themes, setThemes] = useState<string[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeMessage, setSubscribeMessage] = useState('');
 
   // Load blog posts and their votes
   useEffect(() => {
@@ -296,6 +298,55 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
 
             {/* Footer */}
             <div className="mt-16 sm:mt-24 pt-8 text-center" style={{ borderTop: '1px solid #e5e5e5' }}>
+              {/* Email subscription */}
+              <div className="mb-8">
+                <p className="garamond text-sm mb-3" style={{ color: '#666' }}>
+                  Get notified when I publish new essays
+                </p>
+                <form 
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!subscribeEmail) return;
+                    
+                    try {
+                      await subscribeToNewsletter(subscribeEmail);
+                      setSubscribeMessage('Thank you for subscribing!');
+                      setSubscribeEmail('');
+                      setTimeout(() => setSubscribeMessage(''), 3000);
+                    } catch (error: any) {
+                      if (error.message?.includes('already subscribed')) {
+                        setSubscribeMessage('Email already subscribed');
+                      } else {
+                        setSubscribeMessage('Failed to subscribe. Please try again.');
+                      }
+                      setTimeout(() => setSubscribeMessage(''), 3000);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 max-w-md mx-auto"
+                >
+                  <input
+                    type="email"
+                    value={subscribeEmail}
+                    onChange={(e) => setSubscribeEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="px-3 py-1.5 border border-border/20 rounded bg-background focus:outline-none focus:ring-1 focus:ring-foreground/20 garamond text-sm flex-1"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 garamond text-sm hover:opacity-70 transition-opacity"
+                    style={{ color: '#2a2a2a', border: '1px solid #e5e5e5' }}
+                  >
+                    Subscribe
+                  </button>
+                </form>
+                {subscribeMessage && (
+                  <p className="garamond text-xs mt-2" style={{ color: subscribeMessage.includes('Thank you') ? '#666' : '#ef4444' }}>
+                    {subscribeMessage}
+                  </p>
+                )}
+              </div>
+              
               <p className="text-xs" style={{ fontFamily: 'Georgia, serif', color: '#999' }}>
                 © {new Date().getFullYear()} Tjalling van der Schaar
               </p>

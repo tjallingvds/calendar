@@ -125,6 +125,15 @@ export async function initDatabase() {
       )
     `);
 
+    // Email Subscribers
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS email_subscribers (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('PostgreSQL database initialized');
   } finally {
     client.release();

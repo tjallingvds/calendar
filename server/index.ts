@@ -425,6 +425,41 @@ app.delete('/api/blog-posts/:id/vote', async (req, res) => {
   res.json({ success: true, deleted: result.changes });
 });
 
+// ===== EMAIL SUBSCRIBERS ===== (Public)
+
+// Subscribe to email updates
+app.post('/api/subscribe', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Invalid email address' });
+  }
+  
+  try {
+    await run('INSERT INTO email_subscribers (email) VALUES (?)', [email.toLowerCase().trim()]);
+    res.json({ success: true });
+  } catch (error: any) {
+    // Handle duplicate email
+    if (error.message?.includes('UNIQUE') || error.code === '23505') {
+      return res.status(409).json({ error: 'Email already subscribed' });
+    }
+    console.error('Subscribe error:', error);
+    res.status(500).json({ error: 'Failed to subscribe' });
+  }
+});
+
+// Get all subscribers (protected)
+app.get('/api/subscribers', authenticateToken, async (req, res) => {
+  const subscribers = await query('SELECT * FROM email_subscribers ORDER BY created_at DESC', []);
+  res.json(subscribers);
+});
+
+// Delete subscriber (protected)
+app.delete('/api/subscribers/:id', authenticateToken, async (req, res) => {
+  await run('DELETE FROM email_subscribers WHERE id = ?', [req.params.id]);
+  res.json({ success: true });
+});
+
 // ===== TEMPLATES ===== (Protected)
 
 app.get('/api/templates', authenticateToken, async (req, res) => {
