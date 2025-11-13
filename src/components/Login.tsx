@@ -130,7 +130,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               className="garamond text-xs hover:opacity-70 transition-opacity"
               style={{ color: '#999' }}
             >
-              [{selectedTheme || 'themes'}]
+              [topics]
             </button>
             {showThemeDropdown && themes.length > 0 && (
               <div 
@@ -145,9 +145,9 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                   className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${!selectedTheme ? 'font-medium' : ''}`}
                   style={{ color: '#2a2a2a' }}
                 >
-                  All themes
-                </button>
-                {themes.map((theme) => (
+                          All topics
+                        </button>
+                        {themes.map((theme) => (
                   <button
                     key={theme}
                     onClick={() => {
@@ -289,7 +289,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                       className="garamond text-xs hover:opacity-70 transition-opacity"
                       style={{ color: '#999' }}
                     >
-                      [{selectedTheme || 'themes'}]
+                      [topics]
                     </button>
                     {showThemeDropdown && themes.length > 0 && (
                       <div 
@@ -304,7 +304,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
                           className={`w-full text-left px-3 py-1.5 text-xs garamond hover:bg-accent/10 ${!selectedTheme ? 'font-medium' : ''}`}
                           style={{ color: '#2a2a2a' }}
                         >
-                          All themes
+                          All topics
                         </button>
                         {themes.map((theme) => (
                           <button
