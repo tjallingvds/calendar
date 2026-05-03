@@ -134,6 +134,16 @@ export async function initDatabase() {
       )
     `);
 
+    // Blog Images (stored as bytea for portability across volumes)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS blog_images (
+        id SERIAL PRIMARY KEY,
+        data BYTEA NOT NULL,
+        mime_type TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('PostgreSQL database initialized');
   } finally {
     client.release();

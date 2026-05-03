@@ -133,6 +133,16 @@ export function initDatabase() {
     )
   `);
 
+  // Blog Images
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS blog_images (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      data BLOB NOT NULL,
+      mime_type TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log('SQLite database initialized at:', dbPath);
 }
 

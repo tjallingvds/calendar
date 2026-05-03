@@ -1,112 +1,54 @@
-# Weekly Calendar App
+# Writing Suite
 
-A clean, minimal weekly calendar app with task scheduling, event tracking, and reflection tracking (inspired by Linear Pulse).
+A minimal personal writing site: a public list of essays, individual essay pages with voting and email signup, and an authenticated dashboard with a Notion-style editor for writing posts and a list of email subscribers.
 
 ## Features
 
-- 📅 **Weekly Calendar View** - 7-day view with 30-minute time slots
-- ✅ **Task Scheduling** - Add and manage recurring tasks
-- 🎯 **Events & Deadlines** - Track meetings, deadlines, and one-time events
-- 💭 **Reflections** - Rate your productivity, energy, focus, and satisfaction (1-7 scale)
-- 📋 **Templates** - Create weekly templates and apply them to new weeks
-- 🎨 **Custom Colors** - Color-code your tasks and events
-- 💾 **Local Storage** - Everything stored locally in SQLite
+- **Public essays** at `/` and `/blog/:id`, with topic filtering, upvotes, and an email signup form
+- **Notion-style editor** for writing — rich text blocks, headings, lists, quotes, links, drag-and-drop image uploads, and inline citations rendered as numbered footnotes
+- **Subscribers list** showing everyone who signed up
+- **Theme support** to group essays by topic
+- **Image uploads** stored in the database, served from `/api/images/:id`
+- **Citations** that render as superscript numbers in the post body and as a "Notes" section at the bottom of the essay
+
+## Stack
+
+- **Frontend**: React + TypeScript + Vite, Tailwind, shadcn/ui
+- **Editor**: Tiptap (ProseMirror)
+- **Backend**: Express + TypeScript
+- **Database**: SQLite locally (`calendar.db`), PostgreSQL in production via `DATABASE_URL`
+- **Deploy**: Railway
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm
-
-### Installation
-
-1. Install dependencies:
 ```bash
 npm install
+npm run dev:all   # backend on :3001, frontend on :5173
 ```
 
-### Running the App
+Open http://localhost:5173. To access the writing dashboard, click `[login]` in the top-right and use the password from your `.env` (see `env.example`).
 
-**Option 1: Run both servers separately (recommended for development)**
-```bash
-# Terminal 1 - Backend server
-npm run server
-
-# Terminal 2 - Frontend dev server
-npm run dev
-```
-
-**Option 2: Run both at once**
-```bash
-npm run dev:all
-```
-
-Then open your browser to: **http://localhost:5173**
-
-## How to Use
-
-### 1. Create Your Weekly Schedule
-
-- Click on any time slot to add a task
-- Fill in the task details (title, description, time, color)
-- Tasks appear on your calendar
-
-### 2. Add Deadlines & Events
-
-- Click "Add Event" in the top bar
-- Choose type: Deadline, Meeting, or Event
-- Events appear at the top of each day
-
-### 3. Add Reflections
-
-- Click on any task to add a reflection
-- Rate how it went (1-7 scale)
-- Add notes about your experience
-
-### 4. Use Templates for Recurring Weeks
-
-- Click "Templates" in the top bar
-- Create a new template
-- Add tasks for your typical week
-- Every Sunday, apply the template to populate the new week
-
-## Tech Stack
-
-- **Frontend**: React + TypeScript + Vite
-- **UI**: Tailwind CSS + shadcn/ui
-- **Backend**: Express + TypeScript
-- **Database**: SQLite (better-sqlite3)
-- **Font**: Cormorant Garamond (for titles)
-
-## Database
-
-The SQLite database (`calendar.db`) is stored in the project root. All your data is stored locally on your computer.
-
-## Building for Production
+## Building
 
 ```bash
 npm run build
 ```
 
-The frontend will be built to the `dist` directory.
+Frontend output goes to `dist/`. The Express server in production serves the built frontend and the API from one process (`npm start`).
 
-For the backend in production, you can use:
-```bash
-tsx server/index.ts
-```
+## Writing posts
 
-Or compile TypeScript and run with Node.
+In the dashboard:
 
-## Deployment (Optional)
+1. Open the **Writing** tab
+2. Click **New Post** and give it a URL slug (e.g. `building-in-public`)
+3. Write the excerpt — this is what shows on the homepage
+4. Use the rich editor for the full content. Toolbar buttons cover headings, lists, quotes, links, images, and citations
+5. Drop or paste images directly into the editor — they upload automatically
+6. To add a citation, select text and click the citation button, then enter the source. On the public page it renders as a superscript number with a footnotes list at the bottom
 
-If you want to host this online:
+Old posts written in the previous markdown format keep rendering correctly — the public renderer detects format automatically.
 
-1. Deploy backend to Railway, Fly.io, or similar
-2. Update `API_BASE` in `src/lib/api.ts` to your backend URL
-3. Deploy frontend to Vercel, Netlify, or similar
+## Database safety
 
-## License
-
-MIT
-
+The init code uses `CREATE TABLE IF NOT EXISTS` only — existing posts and subscribers on Railway are never modified by deploys.

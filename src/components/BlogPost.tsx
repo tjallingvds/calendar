@@ -4,6 +4,38 @@ import { ArrowLeft, ArrowUp } from 'lucide-react';
 import { getBlogPosts, getBlogPostVotes, getMyVote, submitVote, removeVote, login, getBlogThemes, subscribeToNewsletter } from '@/lib/api';
 import type { BlogPost as BlogPostType, BlogPostVotes } from '@/lib/api';
 
+// Detect HTML content (new editor format) vs legacy markdown
+function isHtml(content: string): boolean {
+  return /<\/?[a-z][\s\S]*?>/i.test(content);
+}
+
+// Walk the HTML, replace each [data-citation] node with a numbered superscript link,
+// and collect the source list to render as a Notes section at the bottom.
+function processCitations(html: string): { html: string; citations: string[] } {
+  if (typeof document === 'undefined') return { html, citations: [] };
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const citations: string[] = [];
+  div.querySelectorAll('[data-citation]').forEach((el) => {
+    const source = el.getAttribute('data-source') || '';
+    const idx = citations.length + 1;
+    citations.push(source);
+    const sup = document.createElement('sup');
+    sup.id = `fnref-${idx}`;
+    sup.innerHTML = `<a href="#fn-${idx}" class="footnote">[${idx}]</a>`;
+    el.replaceWith(sup);
+  });
+  return { html: div.innerHTML, citations };
+}
+
+// Plain-text length for reading-time on rich content
+function htmlToPlainText(html: string): string {
+  if (typeof document === 'undefined') return html;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || '';
+}
+
 export function BlogPost() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -104,7 +136,8 @@ export function BlogPost() {
   };
 
   const calculateReadingTime = (content: string): number => {
-    const words = content.trim().split(/\s+/).length;
+    const text = isHtml(content) ? htmlToPlainText(content) : content;
+    const words = text.trim().split(/\s+/).length;
     const wordsPerMinute = 200;
     return Math.ceil(words / wordsPerMinute);
   };
@@ -233,6 +266,63 @@ export function BlogPost() {
           border-radius: 3px;
           padding: 0.1em 0.3em;
           font-weight: 500;
+        }
+        .rich-html > p { margin: 0 0 1.25em; }
+        .rich-html > p:first-of-type::first-letter {
+          float: left;
+          font-size: 3.5em;
+          line-height: 0.85;
+          margin-right: 0.15em;
+          margin-top: 0.08em;
+          font-weight: 500;
+          color: #1a1a1a;
+        }
+        .rich-html h1, .rich-html h2, .rich-html h3 {
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          margin: 1.6em 0 0.6em;
+        }
+        .rich-html h1 { font-size: 1.75em; }
+        .rich-html h2 { font-size: 1.4em; }
+        .rich-html h3 { font-size: 1.15em; }
+        .rich-html ul, .rich-html ol {
+          padding-left: 1.5em;
+          margin: 0.6em 0 1.25em;
+        }
+        .rich-html ul { list-style: disc; }
+        .rich-html ol { list-style: decimal; }
+        .rich-html li { margin: 0.3em 0; }
+        .rich-html blockquote {
+          border-left: 2px solid #d0d0d0;
+          padding-left: 1.5rem;
+          margin: 1.25em 0;
+          font-style: italic;
+          color: #4a4a4a;
+        }
+        .rich-html a:not(.footnote) {
+          color: #2a2a2a;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+          text-decoration-thickness: 1px;
+        }
+        .rich-html img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 3px;
+          margin: 1.5em auto;
+          display: block;
+        }
+        .rich-html hr {
+          border: none;
+          border-top: 1px solid #e5e5e5;
+          margin: 2em 0;
+        }
+        .rich-html sup { font-size: 0.85em; }
+        @media (max-width: 640px) {
+          .rich-html > p:first-of-type::first-letter {
+            font-size: 2.5em;
+            margin-right: 0.12em;
+          }
         }
         .back-to-top {
           position: fixed;
@@ -419,7 +509,27 @@ export function BlogPost() {
 
             {/* Content */}
             <div className="blog-content garamond text-base sm:text-lg space-y-4 sm:space-y-6">
-                {(post.full_content || post.content).split('\n\n').map((paragraph: string, i: number) => {
+              {(() => {
+                const content = post.full_content || post.content;
+                if (isHtml(content)) {
+                  const { html, citations } = processCitations(content);
+                  return (
+                    <>
+                      <div className="rich-html" dangerouslySetInnerHTML={{ __html: html }} />
+                      {citations.length > 0 && (
+                        <div className="footnotes-section">
+                          <h4 className="text-sm font-medium mb-3">Notes</h4>
+                          {citations.map((src, i) => (
+                            <p key={i} id={`fn-${i + 1}`} className="mb-2">
+                              <a href={`#fnref-${i + 1}`} className="footnote">[{i + 1}]</a> {src}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                }
+                return content.split('\n\n').map((paragraph: string, i: number) => {
                   // Handle AI statement (lines starting with "[AI]")
                   if (paragraph.trim().startsWith('[AI]')) {
                     return (
@@ -576,7 +686,8 @@ export function BlogPost() {
                   return <p key={i} className="dropcap">{processedContent}</p>;
                 }
                 return <p key={i}>{processedContent}</p>;
-              })}
+              });
+              })()}
             </div>
 
             {/* Voting */}

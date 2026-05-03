@@ -236,10 +236,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
               <p className="garamond text-base sm:text-lg mt-4" style={{ color: '#666' }}>
                 Exploration of random thoughts, ideas, and experiences.
               </p>
-              <p className="garamond text-sm mt-2" style={{ color: '#999' }}>
-                Currently reading: <span style={{ fontStyle: 'italic' }}>Outline</span> by Rachel Cusk
-              </p>
-              
+
               {/* Active topic filter indicator */}
               {selectedTheme && (
                 <div className="mt-4 pt-4" style={{ borderTop: '1px solid #e5e5e5' }}>

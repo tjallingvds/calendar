@@ -131,6 +131,26 @@ export async function removeVote(postId: string): Promise<void> {
   return handleResponse(res);
 }
 
+// Image upload (auth required). Reads file → base64 → POST → returns served URL.
+export async function uploadImage(file: File): Promise<{ id: number; url: string }> {
+  const data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1]); // strip "data:<mime>;base64," prefix
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  const res = await fetch(`${API_BASE}/images`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ data, mimeType: file.type }),
+  });
+  return handleResponse(res);
+}
+
 // Email Subscribers
 export async function subscribeToNewsletter(email: string): Promise<void> {
   const res = await fetch(`${API_BASE}/subscribe`, {

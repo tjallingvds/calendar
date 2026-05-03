@@ -20,8 +20,9 @@ const PORT = process.env.PORT || 3001;
 app.set('trust proxy', 1);
 
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// Larger limit so base64-encoded images upload through JSON
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -246,6 +247,42 @@ app.get('/api/subscribers', authenticateToken, async (req, res) => {
 app.delete('/api/subscribers/:id', authenticateToken, async (req, res) => {
   await run('DELETE FROM email_subscribers WHERE id = ?', [req.params.id]);
   res.json({ success: true });
+});
+
+// ===== BLOG IMAGES =====
+
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+app.post('/api/images', authenticateToken, async (req, res) => {
+  const { data, mimeType } = req.body as { data?: string; mimeType?: string };
+
+  if (!data || !mimeType) {
+    return res.status(400).json({ error: 'Missing data or mimeType' });
+  }
+  if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+    return res.status(400).json({ error: 'Unsupported image type' });
+  }
+
+  const buffer = Buffer.from(data, 'base64');
+  if (buffer.length > MAX_IMAGE_BYTES) {
+    return res.status(413).json({ error: 'Image too large (max 8MB)' });
+  }
+
+  const result = await run(
+    'INSERT INTO blog_images (data, mime_type) VALUES (?, ?)',
+    [buffer, mimeType]
+  );
+  res.json({ id: result.lastInsertRowid, url: `/api/images/${result.lastInsertRowid}` });
+});
+
+app.get('/api/images/:id', async (req, res) => {
+  const row = await get('SELECT data, mime_type FROM blog_images WHERE id = ?', [req.params.id]);
+  if (!row) return res.status(404).json({ error: 'Image not found' });
+
+  res.setHeader('Content-Type', row.mime_type);
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.send(row.data);
 });
 
 // Serve static frontend files in production

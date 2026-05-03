@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import type { BlogPost } from '@/lib/api';
 import { getAllBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost } from '@/lib/api';
+import { RichEditor } from './editor/RichEditor';
 
 export function BlogManager() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -189,17 +190,14 @@ export function BlogManager() {
 
             <div>
               <label className="text-sm font-medium mb-1.5 block">
-                Full Content (optional - markdown supported)
+                Full content
               </label>
-              <textarea
+              <RichEditor
                 value={formData.full_content}
-                onChange={(e) => setFormData({ ...formData, full_content: e.target.value })}
-                placeholder="Full post content with markdown formatting..."
-                rows={15}
-                className="w-full px-3 py-2 border border-border/40 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20 text-sm font-mono resize-y"
+                onChange={(html) => setFormData({ ...formData, full_content: html })}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Markdown: ## headers, **bold**, - bullets, 1. numbered lists
+                Drop or paste images directly. Citations render as numbered footnotes on the published page.
               </p>
             </div>
 
