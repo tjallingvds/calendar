@@ -257,7 +257,7 @@ export function Login({ onLogin, error: externalError }: LoginProps) {
             </div>
 
             {/* Notes Feed */}
-            <div className="space-y-10 sm:space-y-14">
+            <div className="space-y-4 sm:space-y-6">
               {blogPosts.map((note) => (
                 <Link to={`/blog/${note.id}`} key={note.id} className="block">
                   <article className="blog-card cursor-pointer p-4 sm:p-5 -mx-4 sm:-mx-5">
